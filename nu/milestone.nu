@@ -25,13 +25,14 @@ export def 'milestone-update' [
     exit $ECODE.MISSING_BINARY
   }
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let selected = if ($milestone | is-empty) { guess-milestone $pr } else { $milestone }
+  let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
   if $force { gh pr edit $pr --remove-milestone }
   print $'Setting milestone to ($selected) for PR ($pr)...'
   gh pr edit $pr --milestone $selected
 }
 
-def guess-milestone [pr: string] {
+# Guess milestone by the merged date of the PR and the infomation of open milestones.
+def guess-milestone [repo: string, pr: string] {
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
     | select number title due_on html_url
