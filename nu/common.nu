@@ -39,18 +39,6 @@ export-env {
   $env.config.color_config.leading_trailing_space_bg = { attr: n }
 }
 
-# the cute and friendly mascot of Nushell :)
-export def ellie [] {
-  let ellie = [
-    "     __  ,",
-    " .--()°'.'",
-    "'|, . ,'",
-    " !_-(_\\",
-  ]
-
-  $ellie | str join "\n" | $"(ansi green)($in)(ansi reset)"
-}
-
 # If current host is Windows
 export def windows? [] {
   # Windows / Darwin
@@ -159,23 +147,4 @@ export def hr-line [
 ] {
   print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi reset)'
   if $blank_line { print -n (char nl) }
-}
-
-# parallel { print "Oh" } { print "Ah" } { print "Eeh" }
-export def parallel [...closures] {
-  $closures | par-each {
-    |c| do $c
-  }
-}
-
-# Display a progress bar with specified length
-export def progress [
-  count: int,               # Total tick count of the progress bar
-  interval: float = 1.0,    # The interval between each tick
-  --char(-c): string = '█', # The char to display for each tick
-] {
-  mut x = 0
-  let duration = $'($interval)sec' | into duration
-  # Available chars: █ ▓ ▒ ░ = - ~ *
-  while $x < $count { print -n $char; $x = $x + 1; sleep $duration }
 }
