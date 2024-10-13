@@ -54,7 +54,7 @@ def guess-milestone [repo: string, pr: string] {
     print 'No milestone found due after the PR merged. Fall back to the latest milestone.'
     $milestones | sort-by due_on | first
   } else { $milestone }
-  $milestone.0.title
+  $milestone.title
 }
 
 alias main = milestone-update
