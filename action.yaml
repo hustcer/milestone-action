@@ -49,5 +49,5 @@ runs:
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
         let milestone = '${{ inputs.milestone }}'
-        set-milestone $repo --gh-token $token --pr $pr --force=$force --milestone=$milestone
+        milestone-update $repo --gh-token $token --pr $pr --force=$force --milestone=$milestone
 

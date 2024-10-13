@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 # Author: hustcer
 # Created: 2024/06/09 19:56:56
-# Description: Script to release setup-bend
+# Description: Script to release milestone-action
 #
 # TODO:
 #   [√] Make sure the release tag does not exist;
