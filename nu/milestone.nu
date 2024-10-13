@@ -28,6 +28,7 @@ export def 'milestone-update' [
   let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
   if $force { gh pr edit $pr --repo $repo --remove-milestone }
   print $'Setting milestone to ($selected) for PR ($pr)...'
+  # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
   gh pr edit $pr --repo $repo --milestone $selected
 }
 

@@ -6,6 +6,10 @@ on:
   pull_request_target:
     types: [closed]
 
+# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
+permissions:
+  contents: write
+
 jobs:
   setup-bend:
     runs-on: ubuntu-latest
