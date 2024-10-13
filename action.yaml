@@ -30,7 +30,7 @@ inputs:
   github-token:
     required: false
     default: '${{ github.token }}'
-    description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to ${{ github.token }}.'
+    description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to `github.token`.'
 
 runs:
   using: 'composite'
