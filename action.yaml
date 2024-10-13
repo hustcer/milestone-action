@@ -1,6 +1,9 @@
 # Milestone Action
 #   @author: hustcer
 #   @created: 2024/10/13 18:50:20
+#   Notice:
+#     Remember to change settings of the repository and update the Workflow permissions to
+#     allow "Read and write permissions"
 # REF:
 #   - https://github.com/cli/cli
 #   - https://cli.github.com/manual/
