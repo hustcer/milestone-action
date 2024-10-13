@@ -47,7 +47,7 @@ def guess-milestone [repo: string, pr: string] {
         $it.due_on | into datetime
       }
     }
-  let mergedAt = gh pr view $pr --json 'mergedAt'
+  let mergedAt = gh pr view $pr --repo $repo --json 'mergedAt'
     | from json | get mergedAt
   let milestone = $milestones | where due_on >= $mergedAt | sort-by due_on | first
   let milestone = if {$milestone | is-empty} {
