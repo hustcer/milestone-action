@@ -20,6 +20,6 @@ jobs:
       - name: Set Milestone
         uses: hustcer/milestone-action@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
