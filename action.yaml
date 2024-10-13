@@ -1,0 +1,37 @@
+# Milestone Action
+#   @author: hustcer
+#   @created: 2024/10/13 18:50:20
+# REF:
+#   - https://docs.github.com/cn/actions/creating-actions/about-custom-actions
+#   - https://docs.github.com/cn/actions/creating-actions/metadata-syntax-for-github-actions
+#   - https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+#   - https://github.com/actions/runner-images
+
+name: 'Milestone Action'
+author: 'hustcer'
+description: 'A github action to set a milestone for a merged PR.'
+
+branding:
+  icon: 'bookmark'
+  color: 'purple'
+
+inputs:
+  github-token:
+    required: false
+    default: '${{ github.token }}'
+    description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to ${{ github.token }}.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Nu
+      uses: hustcer/setup-nu@v3
+      with:
+        version: '0.98.0'
+
+    - name: Set Milestone
+      shell: nu {0}
+      run: |
+        use ${{ github.action_path }}/nu/milestone.nu *
+        set-milestone
+
