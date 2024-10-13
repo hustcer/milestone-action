@@ -14,11 +14,11 @@ export-env {
 }
 
 export def 'milestone-update' [
-  repo: string = 'nushell/nushell',   # Github repository name
-  --gh-token(-t): string,             # Github access token
-  --milestone(-m): string,            # Milestone name
-  --pr: string,                       # The PR number/url/branch of the PR that we want to add milestone.
-  --force(-f),                        # Force update milestone even if the milestone is already set.
+  repo: string,             # Github repository name
+  --gh-token(-t): string,   # Github access token
+  --milestone(-m): string,  # Milestone name
+  --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
+  --force(-f),              # Force update milestone even if the milestone is already set.
 ] {
   if not (is-installed 'gh') {
     print 'gh command not found, please install it first, see: https://cli.github.com/.'
@@ -44,10 +44,10 @@ def guess-milestone [repo: string, pr: string] {
   $milestones | print
   let milestones = $milestones | upsert due_on {|it|
       if ($it.due_on | is-empty) { (date now) - 1day } else {
-        $in.due_on | into datetime
+        $it.due_on | into datetime
       }
     }
-  let mergedAt = gh pr view https://github.com/nushell/nushell/pull/14077 --json 'mergedAt'
+  let mergedAt = gh pr view $pr --json 'mergedAt'
     | from json | get mergedAt
   let milestone = $milestones | where due_on >= $mergedAt | sort-by due_on | first
   let milestone = if {$milestone | is-empty} {
