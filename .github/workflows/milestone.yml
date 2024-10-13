@@ -1,0 +1,19 @@
+# Description:
+#   - Update milestone of a merged PR
+
+name: Milestone Action@Release
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  setup-bend:
+    runs-on: ubuntu-latest
+    name: Milestone Update
+    # TODO: add condition to check if PR is merged
+    if: ${{github.event.pull_request.merged == true}}
+    steps:
+      - name: Set Milestone
+        uses: hustcer/milestone-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
