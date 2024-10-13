@@ -27,7 +27,7 @@ export def 'milestone-update' [
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
   if $force { gh pr edit $pr --repo $repo --remove-milestone }
-  print $'Setting milestone to ($selected) for PR ($pr)...'
+  print $'Setting milestone to ($selected) for PR ($pr) in repository ($repo)...'
   # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
   gh pr edit $pr --repo $repo --milestone $selected
 }

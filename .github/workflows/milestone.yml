@@ -19,5 +19,7 @@ jobs:
     steps:
       - name: Set Milestone
         uses: hustcer/milestone-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
