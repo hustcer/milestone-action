@@ -4,7 +4,7 @@
 #   Notice:
 #     Remember to change settings of the repository and update the Workflow permissions to
 #     allow "Read and write permissions"
-#     Disable actions and enable it again to make it work.
+#     Disable actions and enable it again to make it work. Don't forget to save the changes.
 # REF:
 #   - https://github.com/cli/cli
 #   - https://cli.github.com/manual/
