@@ -19,6 +19,7 @@ export def 'milestone-update' [
   --milestone(-m): string,  # Milestone name
   --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
+  --dry-run(-d),            # Dry run, only print the milestone that would be set.
 ] {
   if not (is-installed 'gh') {
     print 'gh command not found, please install it first, see: https://cli.github.com/.'
@@ -26,10 +27,18 @@ export def 'milestone-update' [
   }
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
-  if $force { gh pr edit $pr --repo $repo --remove-milestone }
-  print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR ($pr) in repository ($repo)...'
+  if $force {
+    if $dry_run {
+      print $'(char nl)Would remove milestone for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
+    } else {
+      gh pr edit $pr --repo $repo --remove-milestone
+    }
+  }
+  print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
   # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
-  gh pr edit $pr --repo $repo --milestone $selected
+  if not $dry_run {
+    gh pr edit $pr --repo $repo --milestone $selected
+  }
 }
 
 # Guess milestone by the merged date of the PR and the infomation of open milestones.
