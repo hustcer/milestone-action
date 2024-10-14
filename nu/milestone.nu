@@ -4,7 +4,7 @@
 # TODO:
 #   [x] Support Windows, macOS, Linux
 #   [x] Should run on local machine or Github runners
-# Description: Scripts for setting up Bend environment
+# Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
 

@@ -15,7 +15,7 @@ export def 'make-release' [
   --update-log(-u)    # Add flag to enable updating CHANGELOG.md
 ] {
 
-  cd $env.SETUP_BEND_PATH
+  cd $env.MILESTONE_ACTION_PATH
   let releaseVer = (open meta.json | get actionVer)
 
   if (has-ref $releaseVer) {
@@ -34,7 +34,7 @@ export def 'make-release' [
   }
   # Delete tags that not exist in remote repo
   git fetch origin --prune '+refs/tags/*:refs/tags/*'
-  let commitMsg = $'A new release for version: ($releaseVer) created by Release command of setup-bend.'
+  let commitMsg = $'A new release for version: ($releaseVer) created by Release command of hustcer/milestone-action.'
   git tag $releaseVer -am $commitMsg
   # Remove local major version tag if exists and ignore errors
   do -i { git tag -d $majorTag | complete | ignore }
