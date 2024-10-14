@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  setup-bend:
+  update-milestone:
     runs-on: ubuntu-latest
     name: Milestone Update
     # TODO: add condition to check if PR is merged
