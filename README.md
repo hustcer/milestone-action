@@ -25,7 +25,6 @@ jobs:
   update-milestone:
     runs-on: ubuntu-latest
     name: Milestone Update
-    if: ${{github.event.pull_request.merged == true}}
     steps:
       - name: Set Milestone
         uses: hustcer/milestone-action@main
