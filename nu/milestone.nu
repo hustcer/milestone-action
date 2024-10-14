@@ -26,6 +26,13 @@ export def 'milestone-update' [
     exit $ECODE.MISSING_BINARY
   }
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
+  let IGNORED_PR_STATUS = [CLOSED OPEN]
+  # Could be MERGED, OPEN, CLOSED.
+  let prState = gh pr view $pr --repo $repo --json 'state' | from json | get state
+  if ($prState in $IGNORED_PR_STATUS) {
+    print $'PR (ansi p)($pr)(ansi reset) is in state (ansi p)($prState)(ansi reset), will be ignored.'
+    return
+  }
   let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
   if $force {
     if $dry_run {
