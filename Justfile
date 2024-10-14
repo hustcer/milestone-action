@@ -45,6 +45,11 @@ release *OPTIONS:
     git-check --check-repo=1 {{SETUP_BEND_PATH}}; \
     make-release {{OPTIONS}}
 
+# Set milestone for PR in dry-run mode
+dry-run *OPTIONS:
+  @overlay use {{ join(SETUP_BEND_PATH, 'nu', 'milestone.nu') }}; \
+  milestone-update --dry-run {{OPTIONS}}
+
 # Plugins need to be registered only once after nu v0.61
 _setup:
   @register -e json {{ join(NU_DIR, _query_plugin) }}
