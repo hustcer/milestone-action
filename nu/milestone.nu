@@ -4,6 +4,10 @@
 # TODO:
 #   [x] Support Windows, macOS, Linux
 #   [x] Should run on local machine or Github runners
+#   [x] Support dry run mode
+#   [ ] Create milestone by title, due_on, and description
+#   [ ] Close milestone by title or number
+#   [ ] Add milestone to issue that has been fixed by a PR
 # Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
@@ -21,10 +25,7 @@ export def 'milestone-update' [
   --force(-f),              # Force update milestone even if the milestone is already set.
   --dry-run(-d),            # Dry run, only print the milestone that would be set.
 ] {
-  if not (is-installed 'gh') {
-    print 'gh command not found, please install it first, see: https://cli.github.com/.'
-    exit $ECODE.MISSING_BINARY
-  }
+  check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let IGNORED_PR_STATUS = [CLOSED OPEN]
   # Could be MERGED, OPEN, CLOSED.
@@ -100,6 +101,31 @@ export def guess-milestone-for-issue [
     | get milestone?.title?
     | default -
   { milestone: $milestone, fixPR: $pr }
+}
+
+# Create milestone for a repository by title, due_on, and description.
+export def create-milestone [
+  repo: string,               # Github repository name
+  title: string,              # Milestone title
+  --due-on(-d): string,       # Milestone due date, format: yyyy/mm/dd
+  --description(-D): string,  # Milestone description
+  --gh-token(-t): string,     # Github access token
+] {
+  check-gh
+  const STD_TIME = '%Y-%m-%dT%H:%M:%SZ'
+  if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
+  let dueOnArg = if ($due_on | is-empty) { [] } else { [-F $'due_on=($due_on | into datetime | format date $STD_TIME)'] }
+  let descArg = if ($description | is-empty) { [] } else { [-F $'description=($description)'] }
+  let result = gh api -X POST $'/repos/($repo)/milestones' -F $'title=($title)' ...$dueOnArg ...$descArg
+  let milestone = $result | from json
+  print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
+}
+
+def check-gh [] {
+  if not (is-installed 'gh') {
+    print 'gh command not found, please install it first, see: https://cli.github.com/.'
+    exit $ECODE.MISSING_BINARY
+  }
 }
 
 alias main = milestone-update
