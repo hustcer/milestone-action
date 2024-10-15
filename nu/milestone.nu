@@ -77,4 +77,29 @@ def guess-milestone [repo: string, pr: string] {
   $milestone.title
 }
 
+# Guess milestone for an issue by the commit message of the last closed PR.
+export def guess-milestone-for-issue [
+  repo: string,          # Github repository name
+  issueNO: string,       # Issue number
+] {
+  let pr = gh api $'/repos/($repo)/issues/($issueNO)/timeline'
+    | from json
+    | where event == closed
+    | filter { $in.commit_id | is-not-empty }
+    | get 0.commit_url
+    | gh api $in
+    | from json
+    | get commit.message
+    | lines
+    | first
+    | parse --regex '\(#(?<pr>\d+)\)'
+    | get pr.0
+
+  let milestone =  gh pr view --repo $repo $pr --json 'milestone'
+    | from json
+    | get milestone?.title?
+    | default -
+  { milestone: $milestone, fixPR: $pr }
+}
+
 alias main = milestone-update
