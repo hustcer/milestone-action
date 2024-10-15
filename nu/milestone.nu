@@ -121,6 +121,31 @@ export def create-milestone [
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
 }
 
+# Close milestone for a repository by title or number.
+export def close-milestone [
+  repo: string,               # Github repository name
+  milestone: string,          # Milestone name or number
+  --gh-token(-t): string,     # Github access token
+] {
+  check-gh
+  if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
+  let milestoneId = if ($milestone | is-int) { $milestone } else {
+    let milestones = gh api $'/repos/($repo)/milestones' | from json
+    let milestone = $milestones | where title == $milestone
+    if ($milestone | is-empty) {
+      print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
+    }
+    $milestone.0.number
+  }
+  let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
+  let milestone = $result | from json
+  print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was closed successfully.'
+}
+
+def is-int [] {
+  $in | str trim | str replace -ar '\d' '' | is-empty
+}
+
 def check-gh [] {
   if not (is-installed 'gh') {
     print 'gh command not found, please install it first, see: https://cli.github.com/.'
