@@ -35,10 +35,14 @@ export def 'milestone-update' [
   }
   let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
   if $force {
-    if $dry_run {
+    let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
+    let shouldRemove = $prevMilestone != $selected
+    if $dry_run and $shouldRemove {
       print $'(char nl)Would remove milestone for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
-    } else {
+    } else if $shouldRemove {
       gh pr edit $pr --repo $repo --remove-milestone
+    } else {
+      print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     }
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
@@ -60,9 +64,8 @@ def guess-milestone [repo: string, pr: string] {
   print 'Open milestones:'; hr-line
   $milestones | table -w 120 | print
   let milestones = $milestones | upsert due_on {|it|
-      if ($it.due_on | is-empty) { (date now) - 1day } else {
-        $it.due_on | into datetime
-      }
+      # + 1day to avoid the case that the PR is merged on the due date of the milestone.
+      if ($it.due_on | is-empty) { (date now) - 1day } else { ($it.due_on | into datetime) + 1day }
     }
   let mergedAt = gh pr view $pr --repo $repo --json 'mergedAt'
     | from json | get mergedAt | into datetime
