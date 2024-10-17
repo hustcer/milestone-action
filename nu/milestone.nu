@@ -57,7 +57,7 @@ export def 'milestone-update' [
 def guess-milestone [repo: string, pr: string] {
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
-    | select number title due_on html_url
+    | select number title due_on created_at html_url
   if ($milestones | is-empty) {
     print 'No open milestones found.'
     exit $ECODE.CONDITION_NOT_SATISFIED
@@ -73,7 +73,7 @@ def guess-milestone [repo: string, pr: string] {
   let guess = $milestones | where due_on >= $mergedAt | sort-by due_on
   let milestone = if ($guess | is-empty) {
     print 'No milestone found due after the PR merged. Fall back to the latest milestone.'
-    $milestones | sort-by due_on | first
+    $milestones | sort-by -r due_on created_at | first
   } else { $guess | first }
   $milestone.title
 }
