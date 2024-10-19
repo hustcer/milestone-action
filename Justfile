@@ -45,10 +45,15 @@ release *OPTIONS:
     git-check --check-repo=1 {{MILESTONE_ACTION_PATH}}; \
     make-release {{OPTIONS}}
 
-# Set milestone for PR in dry-run mode
-dry-run *OPTIONS:
+# Set milestone to PR in dry-run mode, e.g. `just dr hustcer/milestone-action --pr 36`
+dr *OPTIONS:
   @overlay use {{ join(MILESTONE_ACTION_PATH, 'nu', 'milestone.nu') }}; \
-  milestone-update --dry-run {{OPTIONS}}
+  milestone-action bind-pr {{OPTIONS}} --dry-run
+
+# Set milestone to issue in dry-run mode, e.g. `just di hustcer/milestone-action --issue 20`
+di *OPTIONS:
+  @overlay use {{ join(MILESTONE_ACTION_PATH, 'nu', 'milestone.nu') }}; \
+  milestone-action bind-issue {{OPTIONS}} --dry-run
 
 # Plugins need to be registered only once after nu v0.61
 _setup:
