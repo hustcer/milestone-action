@@ -1,8 +1,10 @@
 # Description:
-#   - Update milestone of a merged PR
+#   - Add milestone to a merged PR or closed issue.
 
-name: Milestone Action@Release
+name: Milestone Action
 on:
+  issues:
+    types: [closed]
   pull_request_target:
     types: [closed]
 
@@ -15,9 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     name: Milestone Update
     steps:
-      - name: Set Milestone
+      - name: Set Milestone for PR
         uses: hustcer/milestone-action@main
+        if: github.event.pull_request.merged == true
         with:
+          github-token: ${{ secrets.PAT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Milestone for Issue
+        uses: hustcer/milestone-action@main
+        if: github.event.issue.state == 'closed'
+        with:
+          action: bind-issue
           github-token: ${{ secrets.PAT }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
