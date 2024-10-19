@@ -69,13 +69,13 @@ runs:
         let action = '${{ inputs.action }}'
         let title = '${{ inputs.title }}'
         let description = '${{ inputs.description }}'
-        let due-on = '${{ inputs.due-on }}'
+        let dueOn = '${{ inputs.due-on }}'
         let token = '${{ inputs.github-token }}'
         let issue = '${{ github.event.issue.number }}'
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
         let milestone = '${{ inputs.milestone }}'
         let commonArgs = [$action $repo --gh-token $token --force=$force]
-        let createArgs = [--title=$title --description=$description --due-on=$due-on]
+        let createArgs = [--title=$title --description=$description --due-on=$dueOn]
         milestone-action ...$commonArgs ...$createArgs --pr=$pr --issue=$issue --milestone=$milestone
 
