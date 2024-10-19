@@ -16,7 +16,7 @@ permissions:
 jobs:
   close-milestone:
     runs-on: ubuntu-latest
-    name: Milestone Crete
+    name: Close Milestone
     steps:
       - name: Close Milestone
         uses: hustcer/milestone-action@develop

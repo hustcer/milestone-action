@@ -22,7 +22,7 @@ permissions:
 jobs:
   create-milestone:
     runs-on: ubuntu-latest
-    name: Milestone Crete
+    name: Create Milestone
     steps:
       - name: Create Milestone
         uses: hustcer/milestone-action@develop
