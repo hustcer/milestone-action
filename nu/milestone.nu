@@ -5,9 +5,9 @@
 #   [x] Support Windows, macOS, Linux
 #   [x] Should run on local machine or Github runners
 #   [x] Support dry run mode
-#   [ ] Create milestone by title, due_on, and description
-#   [ ] Close milestone by title or number
-#   [ ] Add milestone to issue that has been fixed by a PR
+#   [x] Create milestone by title, due_on, and description
+#   [x] Close milestone by title or number
+#   [x] Add milestone to issue that has been fixed by a PR
 # Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
@@ -17,7 +17,8 @@ export-env {
   $env.config.color_config.leading_trailing_space_bg = { attr: n }
 }
 
-export def 'milestone-update' [
+# Bind milestone to a merged PR.
+export def 'milestone-bind-for-pr' [
   repo: string,             # Github repository name
   --gh-token(-t): string,   # Github access token
   --milestone(-m): string,  # Milestone name
@@ -27,14 +28,14 @@ export def 'milestone-update' [
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let IGNORED_PR_STATUS = [CLOSED OPEN]
-  # Could be MERGED, OPEN, CLOSED.
+  let IGNORED_PR_STATUS = [CLOSED]
+  # PR state Could be MERGED, OPEN, CLOSED.
   let prState = gh pr view $pr --repo $repo --json 'state' | from json | get state
   if ($prState in $IGNORED_PR_STATUS) {
     print $'PR (ansi p)($pr)(ansi reset) is in state (ansi p)($prState)(ansi reset), will be ignored.'
     return
   }
-  let selected = if ($milestone | is-empty) { guess-milestone $repo $pr } else { $milestone }
+  let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr } else { $milestone }
   if $force {
     let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
@@ -53,8 +54,47 @@ export def 'milestone-update' [
   }
 }
 
+# Bind milestone to a completed issue.
+export def 'milestone-bind-for-issue' [
+  repo: string,             # Github repository name
+  --gh-token(-t): string,   # Github access token
+  --milestone(-m): string,  # Milestone name
+  --issue: string,          # The Issue number that we want to add milestone.
+  --force(-f),              # Force update milestone even if the milestone is already set.
+  --dry-run(-d),            # Dry run, only print the milestone that would be set.
+] {
+  check-gh
+  if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
+  let IGNORED_ISSUE_STATUS = [OPEN]
+  # Issue state Could be OPEN, CLOSED(with stateReasons: COMPLETED, NOT_PLANNED, REOPENED).
+  let issueState = gh issue view $issue --repo $repo --json 'state' | from json | get state
+  let stateReason = gh issue view $issue --repo $repo --json 'stateReason' | from json | get stateReason
+  let shouldIgnore = ($issueState in $IGNORED_ISSUE_STATUS) or ($stateReason == 'NOT_PLANNED')
+  if $shouldIgnore {
+    print $'Issue (ansi p)($issue)(ansi reset) is Not (ansi p)COMPLETED(ansi reset), will be ignored.'
+    return
+  }
+  let selected = if ($milestone | is-empty) { guess-milestone-for-issue $repo $issue } else { $milestone }
+  if $force {
+    let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
+    let shouldRemove = $prevMilestone != $selected
+    if $dry_run and $shouldRemove {
+      print $'(char nl)Would remove milestone for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
+    } else if $shouldRemove {
+      gh issue edit $issue --repo $repo --remove-milestone
+    } else {
+      print $'(char nl)Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
+    }
+  }
+  print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
+  # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
+  if not $dry_run {
+    gh issue edit $issue --repo $repo --milestone $selected
+  }
+}
+
 # Guess milestone by the merged date of the PR and the infomation of open milestones.
-def guess-milestone [repo: string, pr: string] {
+def guess-milestone-for-pr [repo: string, pr: string] {
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
     | select number title due_on created_at html_url
@@ -153,4 +193,25 @@ def check-gh [] {
   }
 }
 
-alias main = milestone-update
+# Milestone action entry point.
+export def milestone-action [
+  action: string,           # Action to perform, could be create, close, or bind-pr.
+  repo: string,             # Github repository name
+  --gh-token(-t): string,   # Github access token
+  --milestone(-m): string,  # Milestone name
+  --title: string,          # Milestone title to create or close
+  --due-on(-d): string,     # Milestone due date, format: yyyy/mm/dd
+  --description(-D): string,# Milestone description
+  --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
+  --force(-f),              # Force update milestone even if the milestone is already set.
+  --dry-run(-d),            # Dry run, only print the milestone that would be set.
+] {
+  match $action {
+    close => { close-milestone $repo $milestone --gh-token $gh_token },
+    create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
+    bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run },
+    bind-issue => { milestone-bind-for-issue $repo -t $gh_token -m $milestone --issue $issue --force=$force --dry-run=$dry_run },
+  }
+}
+
+alias main = milestone-action

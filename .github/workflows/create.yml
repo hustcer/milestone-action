@@ -1,0 +1,36 @@
+# Description:
+#   - Create a milestone by title, description and due date.
+
+name: Milestone Create@develop
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        required: true
+        description: 'Milestone Title'
+      description:
+        required: false
+        description: 'Milestone Description'
+      due-on:
+        required: false
+        description: 'Milestone Due Date'
+
+# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
+permissions:
+  contents: write
+
+jobs:
+  create-milestone:
+    runs-on: ubuntu-latest
+    name: Milestone Crete
+    steps:
+      - name: Create Milestone
+        uses: hustcer/milestone-action@develop
+        with:
+          action: create
+          github-token: ${{ secrets.PAT }}
+          title: ${{ github.event.inputs.title }}
+          due-on: ${{ github.event.inputs.due-on }}
+          description: ${{ github.event.inputs.description }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

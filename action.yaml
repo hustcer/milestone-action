@@ -24,6 +24,22 @@ branding:
   color: 'purple'
 
 inputs:
+  action:
+    required: false
+    default: 'bind-pr'
+    description: 'The action to perform, should be bind-pr,bind-issue,create or close. Defaults to bind-pr.'
+  title:
+    required: false
+    default: '1.0.0'
+    description: 'The title of the milestone to create.'
+  description:
+    required: false
+    default: 'The first milestone.'
+    description: 'The description of the milestone to create.'
+  due-on:
+    required: false
+    default: ''
+    description: 'The due date of the milestone to create.'
   force:
     required: false
     default: false
@@ -50,9 +66,16 @@ runs:
       run: |
         use ${{ github.action_path }}/nu/milestone.nu *
         let repo = '${{ github.repository }}'
+        let action = '${{ inputs.action }}'
+        let title = '${{ inputs.title }}'
+        let description = '${{ inputs.description }}'
+        let due-on = '${{ inputs.due-on }}'
         let token = '${{ inputs.github-token }}'
+        let issue = '${{ github.event.issue.number }}'
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
         let milestone = '${{ inputs.milestone }}'
-        milestone-update $repo --gh-token $token --pr $pr --force=$force --milestone=$milestone
+        let commonArgs = [$action $repo --gh-token $token --force=$force]
+        let createArgs = [--title=$title --description=$description --due-on=$due-on]
+        milestone-action ...$commonArgs ...$createArgs --pr=$pr --issue=$issue --milestone=$milestone
 
