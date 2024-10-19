@@ -1,0 +1,28 @@
+# Description:
+#   - Close a milestone by title or number.
+
+name: Milestone Close@develop
+on:
+  workflow_dispatch:
+    inputs:
+      milestone:
+        required: true
+        description: 'Title / Number'
+
+# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
+permissions:
+  contents: write
+
+jobs:
+  close-milestone:
+    runs-on: ubuntu-latest
+    name: Milestone Crete
+    steps:
+      - name: Close Milestone
+        uses: hustcer/milestone-action@develop
+        with:
+          action: close
+          github-token: ${{ secrets.PAT }}
+          milestone: ${{ github.event.inputs.milestone }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
