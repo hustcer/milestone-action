@@ -203,6 +203,7 @@ export def milestone-action [
   --due-on(-d): string,     # Milestone due date, format: yyyy/mm/dd
   --description(-D): string,# Milestone description
   --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
+  --issue: string,          # The Issue number that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
   --dry-run(-d),            # Dry run, only print the milestone that would be set.
 ] {
