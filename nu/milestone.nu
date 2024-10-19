@@ -74,7 +74,7 @@ export def 'milestone-bind-for-issue' [
     print $'Issue (ansi p)($issue)(ansi reset) is Not (ansi p)COMPLETED(ansi reset), will be ignored.'
     return
   }
-  let selected = if ($milestone | is-empty) { guess-milestone-for-issue $repo $issue } else { $milestone }
+  let selected = if ($milestone | is-empty) { guess-milestone-for-issue $repo $issue | get milestone } else { $milestone }
   if $force {
     let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
@@ -128,13 +128,15 @@ export def guess-milestone-for-issue [
     | get 0 | to text
     | str trim | lines | str join
     | parse --regex '#(?<pr>\d+)'
-    | get pr.0
+    | get pr | last
 
   let milestone =  gh pr view --repo $repo $pr --json 'milestone'
     | from json
     | get milestone?.title?
     | default -
-  { milestone: $milestone, fixPR: $pr }
+  let result = { milestone: $milestone, fixPR: $pr }
+  print $'Milestone (ansi p)($result.milestone)(ansi reset) was guessed for issue (ansi p)($issueNO)(ansi reset) and fixed by PR (ansi p)($result.fixPR)(ansi reset).'
+  $result
 }
 
 # Create milestone for a repository by title, due_on, and description.
