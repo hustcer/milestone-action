@@ -65,17 +65,15 @@ runs:
       shell: nu {0}
       run: |
         use ${{ github.action_path }}/nu/milestone.nu *
-        let repo = '${{ github.repository }}'
         let action = '${{ inputs.action }}'
+        let repo = '${{ github.repository }}'
         let title = '${{ inputs.title }}'
-        let description = '${{ inputs.description }}'
         let dueOn = '${{ inputs.due-on }}'
+        let description = '${{ inputs.description }}'
         let token = '${{ inputs.github-token }}'
+        let milestone = '${{ inputs.milestone }}'
         let issue = '${{ github.event.issue.number }}'
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
-        let milestone = '${{ inputs.milestone }}'
-        let commonArgs = [$action $repo --gh-token $token --force=$force]
-        let createArgs = [--title=$title --description=$description --due-on=$dueOn]
-        milestone-action ...$commonArgs ...$createArgs --pr=$pr --issue=$issue --milestone=$milestone
+        milestone-action $action $repo --gh-token=$token --force=$force --pr=$pr --issue=$issue --milestone=$milestone --title=$title --description=$description --due-on=$dueOn
 
