@@ -130,10 +130,22 @@ export def guess-milestone-for-issue [
     | parse --regex '#(?<pr>\d+)'
     | get pr | last
 
-  let milestone =  gh pr view --repo $repo $pr --json 'milestone'
+  mut milestone =  gh pr view --repo $repo $pr --json 'milestone'
     | from json
     | get milestone?.title?
     | default -
+
+  mut tries = 1
+  # Loop 5 times to find the milestone of the last closed PR
+  loop {
+    if $milestone != '-' or $tries > 5 { break }
+    print $'Try to guess milestone for issue (ansi p)($issueNO)(ansi reset) closed by PR (ansi p)($pr)(ansi reset) ...'
+    $tries += 1; sleep 2sec
+    $milestone = (gh pr view --repo $repo $pr --json 'milestone'
+      | from json
+      | get milestone?.title?
+      | default -)
+  }
   let result = { milestone: $milestone, fixPR: $pr }
   print $'Milestone (ansi p)($result.milestone)(ansi reset) was guessed for issue (ansi p)($issueNO)(ansi reset) and fixed by PR (ansi p)($result.fixPR)(ansi reset).'
   $result
