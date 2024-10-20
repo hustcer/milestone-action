@@ -5,12 +5,9 @@
 ## Features
 
 - Add milestone to merged PRs automatically.
-
-## Planed Features
-
-- [ ] Add milestone to closed issues that have a merged fix PR
-- [ ] Create milestone by title, description and due date
-- [ ] Close milestone by title or milestone number
+- Add milestone to closed issues that have a merged PR fix
+- Create milestone by title, description and due date
+- Close milestone by title or milestone number
 
 ## Usage
 
