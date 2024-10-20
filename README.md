@@ -83,6 +83,16 @@ Close milestone by title or milestone number:
 | force        | Boolean | If the PR or Issue already has a milestone just remove it and set to a new one if they are different                    |
 | github-token | String  | The GitHub token to access the API for milestone management, defaults to `${{ github.token }}`                          |
 
+### FAQ
+
+1. How do I know which milestone to bind to a merged PR?
+
+First, if the PR is closed without merging, the action will do nothing. After the PR being merged, the action will use the milestone you specified in the input, or fall back to guess a milestone to bind. If there is no opened milestone the action will stop. If there are multiple opened milestones, the action will bind to the one whose due date is closest to the PR merged date and fall back to the first one sorted by the milestone created date.
+
+1. How do I know which milestone to bind to a closed issue?
+
+The action will only add milestone to a closed issue that has a merged PR fix, Otherwise, the action will do nothing. And the issue will be bound to exactly the same milestone as the PR that fixed it.
+
 ## License
 
 Licensed under:
