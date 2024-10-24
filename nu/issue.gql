@@ -1,0 +1,44 @@
+{
+  repository(owner: "__repo_owner__", name: "__repo_name__") {
+    issueOrPullRequest(number: __issue_number__) {
+      __typename
+      ... on Closable {
+        closed
+        closedAt
+      }
+      ... on Issue {
+        timeline(last: 100) {
+          edges {
+            node {
+              ... on ClosedEvent {
+                stateReason
+                closer {
+                  __typename
+                  ... on PullRequest {
+                    repository {
+                      nameWithOwner
+                    }
+                    title
+                    number
+                    mergeCommit {
+                      abbreviatedOid
+                    }
+                    milestone {
+                      title
+                    }
+                    author {
+                      login
+                    }
+                  }
+                }
+                actor {
+                  login
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
