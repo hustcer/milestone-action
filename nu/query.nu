@@ -8,18 +8,19 @@
 #   query-issue-closer-by-graphql web-infra-dev/rsbuild 3780 <token>
 
 export def query-issue-closer-by-graphql [
-  repo: string,          # Github repository name
-  issueNO: string,       # Issue number
-  token: string          # Github access token
+  repo: string,         # Github repository name
+  issueNO: int,         # Issue number
+  token: string         # Github access token
 ] {
   let owner = $repo | split row / | first
   let name = $repo | split row / | last
   let query = open -r nu/issue.gql
-    | str replace __repo_name__ $name
-    | str replace __repo_owner__ $owner
-    | str replace __issue_number__ $issueNO
+  let variables = {
+    repo_name: $name,
+    repo_owner: $owner,
+    issue_number: $issueNO
+  }
 
-  let payload = { query: $query } | to json
   const QUERY_API = 'https://api.github.com/graphql'
   let HEADERS = ['Authorization' $'bearer ($token)']
   let rename = {
@@ -29,6 +30,7 @@ export def query-issue-closer-by-graphql [
     'mergeCommit.abbreviatedOid': 'sha'
   }
 
+  let payload = { query: $query, variables: $variables } | to json
   let result = http post --content-type application/json -H $HEADERS $QUERY_API $payload
     | get data.repository.issueOrPullRequest
 
