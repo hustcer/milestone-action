@@ -60,7 +60,7 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
       | select number milestone?.title? author.login repository.nameWithOwner mergeCommit.abbreviatedOid title
       | rename -c $rename
       | last
-    $milestone = $closer.milestone?
+    $milestone = $closer.milestone? | default '-'
   }
 
   { closed: $result.closed, closedAt: $result.closedAt, closedBy: $closer, events: $events }
