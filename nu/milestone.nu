@@ -76,7 +76,7 @@ export def 'milestone-bind-for-issue' [
     return
   }
   let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
-  let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? } else { $milestone }
+  let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? | default '-' } else { $milestone }
   if $force {
     let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
@@ -87,6 +87,10 @@ export def 'milestone-bind-for-issue' [
     } else {
       print $'(char nl)Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     }
+  }
+  if $selected == '-' {
+    print $'No milestone found for issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset).'
+    return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
   # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
