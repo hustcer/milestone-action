@@ -55,12 +55,13 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
 
     $events = $result.timeline.edges.node | filter {|it| $it.stateReason? | is-not-empty }
 
-    $closer = $events | filter {|it| $it.closer?.number? | is-not-empty }
+    let $closers = $events | filter {|it| $it.closer?.number? | is-not-empty }
       | select closer | flatten
       | select number milestone?.title? author.login repository.nameWithOwner mergeCommit.abbreviatedOid title
       | rename -c $rename
-      | last
+
     $tries += 1
+    $closer = if ($closers | is-empty) { {} } else { $closers | last }
     $milestone = $closer.milestone? | default '-'
   }
 
