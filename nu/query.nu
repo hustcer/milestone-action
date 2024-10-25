@@ -16,6 +16,8 @@ export def query-issue-closer-by-graphql [
 ] {
   let owner = $repo | split row / | first
   let name = $repo | split row / | last
+  print $env.FILE_PWD?
+  print $env.CURRENT_FILE?
   let query = open -r nu/issue.gql
   let variables = {
     repo_name: $name,
