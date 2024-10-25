@@ -1,7 +1,7 @@
 {
     "name": "MileStone Action",
-    "version": "2.0.0",
-    "actionVer": "v2.0",
+    "version": "2.1.0",
+    "actionVer": "v2.1",
     "author": "hustcer",
     "license": "MIT",
     "github": "https://github.com/hustcer/milestone-action",

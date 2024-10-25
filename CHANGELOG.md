@@ -1,6 +1,34 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2024-10-25
+
+### Bug Fixes
+
+- Do not add invalid milestone to closed issues (#75)
+- Fix milestone query for closed issue (#76)
+- Fix milestone binding for closes issues when No close PR found (#78)
+- Sleep 2sec for milestone query of closed issues (#80)
+
+### Documentation
+
+- Update README.md for action Inputs (#56)
+- Add FAQ (#60)
+- Add README.zh-CN.md (#61)
+
+### Features
+
+- Try to query issue closed by PR with `graphql`
+- Use Github `graphql` API to query issue closer (#73)
+
+### Miscellaneous Tasks
+
+- Update action description
+
+### Deps
+
+- Upgrade `Nushell` to v0.99 (#65)
+
 ## [2.0.0] - 2024-10-20
 
 ### Features
