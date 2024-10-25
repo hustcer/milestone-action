@@ -76,5 +76,14 @@ runs:
         let issue = '${{ github.event.issue.number }}'
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
-        milestone-action $action $repo --gh-token=$token --force=$force --pr=$pr --issue=$issue --milestone=$milestone --title=$title --description=$description --due-on=$dueOn
+        (milestone-action $action $repo
+          --pr=$pr
+          --issue=$issue
+          --force=$force
+          --gh-token=$token
+          --milestone=$milestone
+          --title=$title
+          --due-on=$dueOn
+          --description=$description
+        )
 
