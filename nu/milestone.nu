@@ -11,6 +11,7 @@
 # Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
+use query.nu [query-issue-closer-by-graphql]
 
 export-env {
   $env.config.table.mode = 'light'
@@ -59,7 +60,7 @@ export def 'milestone-bind-for-issue' [
   repo: string,             # Github repository name
   --gh-token(-t): string,   # Github access token
   --milestone(-m): string,  # Milestone name
-  --issue: string,          # The Issue number that we want to add milestone.
+  --issue: int,             # The Issue number that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
   --dry-run(-d),            # Dry run, only print the milestone that would be set.
 ] {
@@ -74,7 +75,8 @@ export def 'milestone-bind-for-issue' [
     print $'Issue (ansi p)($issue)(ansi reset) is Not (ansi p)COMPLETED(ansi reset), will be ignored.'
     return
   }
-  let selected = if ($milestone | is-empty) { guess-milestone-for-issue $repo $issue | get milestone } else { $milestone }
+  let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
+  let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? } else { $milestone }
   if $force {
     let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
@@ -211,7 +213,7 @@ export def milestone-action [
   --due-on(-d): string,     # Milestone due date, format: yyyy/mm/dd
   --description(-D): string,# Milestone description
   --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
-  --issue: string,          # The Issue number that we want to add milestone.
+  --issue: int,             # The Issue number that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
   --dry-run(-d),            # Dry run, only print the milestone that would be set.
 ] {
