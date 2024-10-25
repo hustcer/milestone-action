@@ -37,8 +37,8 @@ export def 'milestone-bind-for-pr' [
     return
   }
   let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr } else { $milestone }
+  let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
   if $force {
-    let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
     if $dry_run and $shouldRemove {
       print $'(char nl)Would remove milestone for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
@@ -47,6 +47,10 @@ export def 'milestone-bind-for-pr' [
     } else {
       print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     }
+  }
+  if $prevMilestone == $selected {
+    print $'Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($selected)(ansi reset), will be ignored.'
+    return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
   # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
@@ -77,8 +81,8 @@ export def 'milestone-bind-for-issue' [
   }
   let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
   let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? | default '-' } else { $milestone }
+  let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
   if $force {
-    let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
     let shouldRemove = $prevMilestone != $selected
     if $dry_run and $shouldRemove {
       print $'(char nl)Would remove milestone for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
@@ -90,6 +94,10 @@ export def 'milestone-bind-for-issue' [
   }
   if $selected == '-' {
     print $'No milestone found for issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset).'
+    return
+  }
+  if $prevMilestone == $selected {
+    print $'Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($selected)(ansi reset), will be ignored.'
     return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
