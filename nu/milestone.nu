@@ -217,9 +217,6 @@ export def milestone-action [
   --force(-f),                # Force update milestone even if the milestone is already set.
   --dry-run(-d),              # Dry run, only print the milestone that would be set.
 ] {
-  print $env.FILE_PWD?
-  print $env.CURRENT_FILE?
-  $env | table -e | print
   match $action {
     close => { close-milestone $repo $milestone --gh-token $gh_token },
     create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
