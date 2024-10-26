@@ -38,10 +38,9 @@ jobs:
 
       - name: Output Milestone Number
         if: success()
-        env:
-          MILESTONE_NUMBER: ${{ steps.create.outputs.milestone-number }}
+        shell: nu {0}
         run: |
-          echo "The new milestone number is $MILESTONE_NUMBER"
+          print $"The new milestone number is (ansi p)${{ steps.create.outputs.milestone-number }}(ansi reset)"
 
       - name: Debug Output
         if: failure()
