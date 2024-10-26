@@ -53,6 +53,10 @@ inputs:
     default: '${{ github.token }}'
     description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to `github.token`.'
 
+outputs:
+  milestone-number:
+    description: 'The number of the milestone created or set.'
+
 runs:
   using: 'composite'
   steps:

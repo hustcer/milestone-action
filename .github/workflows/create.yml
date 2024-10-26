@@ -25,6 +25,7 @@ jobs:
     name: Create Milestone
     steps:
       - name: Create Milestone
+        id: create
         uses: hustcer/milestone-action@develop
         with:
           action: create
@@ -34,3 +35,16 @@ jobs:
           description: ${{ github.event.inputs.description }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Milestone Number
+        if: success()
+        run: |
+          echo "The new milestone number is ${{ steps.create.outputs.milestone-number }}"
+
+      - name: Debug Output
+        if: failure()
+        run: |
+          echo "Failed to create milestone"
+          echo "Title: ${{ github.event.inputs.title }}"
+          echo "Due Date: ${{ github.event.inputs.due-on }}"
+          echo "Description: ${{ github.event.inputs.description }}"
