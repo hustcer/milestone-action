@@ -21,7 +21,7 @@ author: 'hustcer'
 description: 'A Github action to create, close milestones and set milestone to merged PRs or closed issues'
 
 branding:
-  icon: 'bookmark'
+  icon: 'award'
   color: 'purple'
 
 inputs:

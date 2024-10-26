@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2024-10-26
+
+### Bug Fixes
+
+- Don't set milestone if it's already been set with the right milestone (#82)
+
+### Features
+
+- Add output milestone number support for creating milestone (#87)
+- Output closed milestone number (#89)
+- Try to fix permission error by setting `pull-requests: write`
+
 ## [2.1.0] - 2024-10-25
 
 ### Bug Fixes
