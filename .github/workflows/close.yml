@@ -12,6 +12,7 @@ on:
 # Fix GraphQL: Resource not accessible by integration (updatePullRequest)
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   close-milestone:
@@ -23,7 +24,6 @@ jobs:
         uses: hustcer/milestone-action@develop
         with:
           action: close
-          github-token: ${{ secrets.PAT }}
           milestone: ${{ github.event.inputs.milestone }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
