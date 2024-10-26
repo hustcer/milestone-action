@@ -25,6 +25,7 @@ jobs:
     name: Create Milestone
     steps:
       - name: Create Milestone
+        id: create
         uses: hustcer/milestone-action@develop
         with:
           action: create
@@ -34,3 +35,6 @@ jobs:
           description: ${{ github.event.inputs.description }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Milestone Number
+        run: echo "The new milestone number is ${{ steps.create.outputs.milestone_number }}"
