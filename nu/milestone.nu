@@ -181,7 +181,6 @@ export def create-milestone [
   let result = gh api -X POST $'/repos/($repo)/milestones' -F $'title=($title)' ...$dueOnArg ...$descArg
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
-  print 'Set output for milestone create Github Action:'
   echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
 }
 
