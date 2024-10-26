@@ -203,6 +203,7 @@ export def close-milestone [
   let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was closed successfully.'
+  echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
 }
 
 def is-int [] {

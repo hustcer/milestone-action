@@ -57,7 +57,7 @@ inputs:
 outputs:
   milestone-number:
     value: ${{ steps.action.outputs.milestone-number }}
-    description: 'The number of the milestone created.'
+    description: 'The number of the milestone created or closed.'
 
 runs:
   using: 'composite'

@@ -19,6 +19,7 @@ jobs:
     name: Close Milestone
     steps:
       - name: Close Milestone
+        id: close
         uses: hustcer/milestone-action@develop
         with:
           action: close
@@ -26,3 +27,9 @@ jobs:
           milestone: ${{ github.event.inputs.milestone }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Milestone Number
+        if: success()
+        shell: nu {0}
+        run: |
+          print $"The closed milestone number is (ansi p)${{ steps.close.outputs.milestone-number }}(ansi reset)"
