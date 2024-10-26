@@ -48,8 +48,9 @@ export def 'milestone-bind-for-pr' [
       print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     }
   }
-  if $prevMilestone == $selected {
-    print $'Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($selected)(ansi reset), will be ignored.'
+  let ignoreSet = not $force and $prevMilestone != '-'
+  if $prevMilestone == $selected or $ignoreSet {
+    print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
@@ -96,8 +97,9 @@ export def 'milestone-bind-for-issue' [
     print $'No milestone found for issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset).'
     return
   }
-  if $prevMilestone == $selected {
-    print $'Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($selected)(ansi reset), will be ignored.'
+  let ignoreSet = not $force and $prevMilestone != '-'
+  if $prevMilestone == $selected or $ignoreSet {
+    print $'(char nl)Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
     return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
