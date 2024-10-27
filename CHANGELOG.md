@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2024-10-27
+
+### Features
+
+- Don't update the milestone if it was set and call without the `--force` option (#92)
+
 ## [2.2.0] - 2024-10-26
 
 ### Bug Fixes
