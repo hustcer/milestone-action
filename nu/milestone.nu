@@ -157,7 +157,7 @@ export def guess-milestone-for-issue [
   loop {
     if $milestone != '-' or $tries > 5 { break }
     print $'Try to guess milestone for issue (ansi p)($issueNO)(ansi reset) closed by PR (ansi p)($pr)(ansi reset) ...'
-    $tries += 1; sleep 2sec
+    $tries += 1; sleep 3sec
     $milestone = (gh pr view --repo $repo $pr --json 'milestone'
       | from json
       | get milestone?.title?
