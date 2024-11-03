@@ -228,7 +228,7 @@ export def delete-milestone [
   }
   let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
   let response = $result | from json
-  print $'Milestone with NO. (ansi p)($milestone.number)(ansi reset) was deleted with response:'
+  print $'Milestone with NO. (ansi p)($milestoneId)(ansi reset) was deleted with response:'
   $response | table -e | print
 }
 
