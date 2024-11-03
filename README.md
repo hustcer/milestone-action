@@ -8,6 +8,7 @@
 - Add milestone to closed issues that have a merged PR fix automatically
 - Create milestone by title, description and due date
 - Close milestone by title or milestone number
+- Delete milestone by title or milestone number
 
 ## Usage
 
@@ -71,15 +72,27 @@ Close milestone by title or milestone number:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+Delete milestone by title or milestone number:
+
+```yaml
+- name: Delete Milestone
+  uses: hustcer/milestone-action@v2
+  with:
+    action: delete
+    milestone: v1.0   # Milestone title or number
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ## Inputs
 
 | Name         | Type    | Description                                                                                                             |
 | ------------ | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| action       | String  | Action to perform: create, close, bind-pr, bind-issue, defaults to `bind-pr`                                            |
+| action       | String  | Action to perform: create, close, delete, bind-pr, bind-issue, defaults to `bind-pr`                                            |
 | title        | String  | Title of the milestone to create                                                                                        |
 | due-on       | String  | Due date of the milestone (yyyy-mm-dd) to create                                                                        |
 | description  | String  | Description of the milestone to create                                                                                  |
-| milestone    | String  | Title or number of the milestone to close, could also be used to specify the milestone title to bind to the PR or issue |
+| milestone    | String  | Title or number of the milestone to close or delete, could also be used to specify the milestone title to bind to the PR or issue |
 | force        | Boolean | If the PR or Issue already has a milestone just remove it and set to a new one if they are different                    |
 | github-token | String  | The GitHub token to access the API for milestone management, defaults to `${{ github.token }}`                          |
 

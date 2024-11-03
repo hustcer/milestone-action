@@ -6,6 +6,7 @@
 - 自动为已合并修复PR的关闭 issue 添加里程碑
 - 通过标题、描述和截止日期创建里程碑
 - 通过标题或里程碑编号关闭里程碑
+- 通过标题或里程碑编号删除里程碑
 
 ## 使用方法
 
@@ -69,15 +70,27 @@ jobs:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+通过标题或里程碑编号删除里程碑：
+
+```yaml
+- name: Delete Milestone
+  uses: hustcer/milestone-action@v2
+  with:
+    action: delete
+    milestone: v1.0   # Milestone title or number
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ## 输入参数
 
 | 名称          | 类型     | 描述                                                                         |
 | ------------ | ------- | ---------------------------------------------------------------------------- |
-| action       | String  | 要执行的操作, 可能的值未：create, close, bind-pr, bind-issue，默认为 `bind-pr`     |
+| action       | String  | 要执行的操作, 可能的值未：create, close, delete, bind-pr, bind-issue，默认为 `bind-pr`|
 | title        | String  | 要创建的里程碑标题                                                               |
 | due-on       | String  | 要创建的里程碑的截止日期（yyyy-mm-dd）                                             |
 | description  | String  | 要创建的里程碑描述信息                                                            |
-| milestone    | String  | 要关闭的里程碑标题或编号，也可用于指定要绑定到 PR 或 issue 的里程碑标题                  |
+| milestone    | String  | 要关闭或删除的里程碑标题或编号，也可用于指定要绑定到 PR 或 issue 的里程碑标题             |
 | force        | Boolean | 如果 PR 或 Issue 已有里程碑，且与新的不同，则移除旧的并设置新的                         |
 | github-token | String  | 用于访问 API 进行里程碑管理的 GitHub Token，默认为 `${{ github.token }}`            |
 

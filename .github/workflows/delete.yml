@@ -1,0 +1,29 @@
+# Description:
+#   - Delete a milestone by title or number.
+
+name: Milestone Delete@develop
+on:
+  workflow_dispatch:
+    inputs:
+      milestone:
+        required: true
+        description: 'Title / Number'
+
+# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  delete-milestone:
+    runs-on: ubuntu-latest
+    name: Delete Milestone
+    steps:
+      - name: Delete Milestone
+        id: delete
+        uses: hustcer/milestone-action@develop
+        with:
+          action: delete
+          milestone: ${{ github.event.inputs.milestone }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
