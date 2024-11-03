@@ -28,7 +28,7 @@ inputs:
   action:
     required: false
     default: 'bind-pr'
-    description: 'The action to perform, should be bind-pr,bind-issue,create or close. Defaults to bind-pr.'
+    description: 'The action to perform, should be bind-pr,bind-issue,create, delete or close. Defaults to bind-pr.'
   title:
     required: false
     default: '1.0.0'
@@ -48,7 +48,7 @@ inputs:
   milestone:
     required: false
     default: ''
-    description: 'The milestone to set. If not provided, will try to guess a milestone.'
+    description: 'The milestone to set, close or delete.'
   github-token:
     required: false
     default: '${{ github.token }}'

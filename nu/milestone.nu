@@ -7,6 +7,7 @@
 #   [x] Support dry run mode
 #   [x] Create milestone by title, due_on, and description
 #   [x] Close milestone by title or number
+#   [x] Delete milestone by title or number
 #   [x] Add milestone to issue that has been fixed by a PR
 # Description: Scripts for Github milestone management.
 
@@ -209,6 +210,28 @@ export def close-milestone [
   echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
 }
 
+# Delete milestone for a repository by title or number.
+export def delete-milestone [
+  repo: string,               # Github repository name
+  milestone: string,          # Milestone name or number
+  --gh-token(-t): string,     # Github access token
+] {
+  check-gh
+  if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
+  let milestoneId = if ($milestone | is-int) { $milestone } else {
+    let milestones = gh api $'/repos/($repo)/milestones' | from json
+    let milestone = $milestones | where title == $milestone
+    if ($milestone | is-empty) {
+      print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
+    }
+    $milestone.0.number
+  }
+  let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
+  let response = $result | from json
+  print $'Milestone with NO. (ansi p)($milestone.number)(ansi reset) was deleted with response:'
+  $response | table -e | print
+}
+
 def is-int [] {
   $in | str trim | str replace -ar '\d' '' | is-empty
 }
@@ -236,6 +259,7 @@ export def milestone-action [
 ] {
   match $action {
     close => { close-milestone $repo $milestone --gh-token $gh_token },
+    delete => { delete-milestone $repo $milestone --gh-token $gh_token },
     create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
     bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run },
     bind-issue => { milestone-bind-for-issue $repo -t $gh_token -m $milestone --issue ($issue | into int) --force=$force --dry-run=$dry_run },
