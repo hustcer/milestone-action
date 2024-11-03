@@ -1,0 +1,44 @@
+# Description:
+#   - Create, Close and Delete a milestone.
+
+name: Milestone Operations@develop
+on:
+  pull_request:
+  workflow_dispatch:
+
+# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  milestone:
+    runs-on: ubuntu-latest
+    name: Milestone Operates
+    steps:
+      - name: Create Milestone
+        id: create
+        uses: hustcer/milestone-action@develop
+        with:
+          action: create
+          title: 'v0.0.1'
+          due-on: '2025/12/31'
+          description: 'Test Create Milestone'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Close Milestone
+        id: close
+        uses: hustcer/milestone-action@develop
+        with:
+          action: close
+          milestone: 'v0.0.1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete Milestone
+        id: delete
+        uses: hustcer/milestone-action@develop
+        with:
+          action: delete
+          milestone: ${{ steps.create.outputs.milestone-number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
