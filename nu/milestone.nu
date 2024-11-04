@@ -110,7 +110,7 @@ export def 'milestone-bind-for-issue' [
   }
 }
 
-# Guess milestone by the merged date of the PR and the infomation of open milestones.
+# Guess milestone by the merged date of the PR and the information of open milestones.
 def guess-milestone-for-pr [repo: string, pr: string] {
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
