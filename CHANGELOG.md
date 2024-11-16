@@ -1,6 +1,23 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.5.0] - 2024-11-16
+
+### Bug Fixes
+
+- Fix delete milestone
+
+### Features
+
+- Sleep 3sec for issue's milestone query (#97)
+- Add delete milestone by title or number support (#98)
+- Add CI workflow to create, close and delete a milestone (#100)
+
+### Miscellaneous Tasks
+
+- Add `cspell` spelling check hook for `lefthook` (#103)
+- Update `Nushell` to v0.100 (#106)
+
 ## [2.3.0] - 2024-10-27
 
 ### Features
