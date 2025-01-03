@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2025-01-03
+
+### Bug Fixes
+
+- Fix add milestone to issues that closed by auto-merge PRs (#110)
+
+### Deps
+
+- Upgrade Nu to v0.101 (#108)
+
 ## [2.5.0] - 2024-11-16
 
 ### Bug Fixes
