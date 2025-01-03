@@ -57,7 +57,7 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
 
     let $closers = $events | filter {|it| $it.closer?.number? | is-not-empty }
       | select closer | flatten
-      | select number milestone?.title? author.login repository.nameWithOwner mergeCommit.abbreviatedOid title
+      | select number milestone?.title? author.login repository.nameWithOwner mergeCommit?.abbreviatedOid? title
       | rename -c $rename
 
     $tries += 1; sleep 3sec
