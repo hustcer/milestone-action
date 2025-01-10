@@ -18,7 +18,7 @@
 
 name: 'Milestone Action'
 author: 'hustcer'
-description: 'A Github action to create, close, delete milestones and set milestone to merged PRs or closed issues'
+description: 'A Github action to create, close, delete milestones and set milestone to merged PRs or closed issues 🔥'
 
 branding:
   icon: 'award'
