@@ -9,16 +9,6 @@
 # let _TIME_FMT = '%Y-%m-%d %H:%M:%S'
 # let _UPGRADE_TAG = '$-FORCE-UPGRADE-$'
 
-# All available exit codes:
-#   0: Success
-#   1: Outdated
-#   2: Missing binary
-#   3: Missing dependency
-#   5: Condition not satisfied
-#   6: Server error
-#   7: Invalid parameter
-#   8: Auth failed
-
 export const _DATE_FMT  = '%Y.%m.%d'
 export const _TIME_FMT =  '%Y/%m/%d %H:%M:%S'
 
@@ -26,12 +16,12 @@ export const _TIME_FMT =  '%Y/%m/%d %H:%M:%S'
 export const ECODE = {
   SUCCESS: 0,
   OUTDATED: 1,
-  MISSING_BINARY: 2,
-  MISSING_DEPENDENCY: 3,
-  CONDITION_NOT_SATISFIED: 5,
-  SERVER_ERROR: 6,
-  INVALID_PARAMETER: 7,
-  AUTH_FAILED: 8,
+  AUTH_FAILED: 2,
+  SERVER_ERROR: 3,
+  MISSING_BINARY: 5,
+  INVALID_PARAMETER: 6,
+  MISSING_DEPENDENCY: 7,
+  CONDITION_NOT_SATISFIED: 8,
 }
 
 export-env {
@@ -71,25 +61,25 @@ export def has-ref [
 
 # Compare two version number, return `1` if first one is higher than second one,
 # Return `0` if they are equal, otherwise return `-1`
-export def compare-ver [
-  from: string,
-  to: string,
-] {
-  let dest = ($to | str downcase | str trim -c 'v' | str trim)
-  let source = ($from | str downcase | str trim -c 'v' | str trim)
-  # Ignore '-beta' or '-rc' suffix
-  let v1 = ($source | split row '.' | each {|it| ($it | parse -r '(?P<v>\d+)' | get v | get 0 )})
-  let v2 = ($dest | split row '.' | each {|it| ($it | parse -r '(?P<v>\d+)' | get v | get 0 )})
-  for $v in ($v1 | enumerate) {
-    let c1 = ($v1 | get -i $v.index | default 0 | into int)
-    let c2 = ($v2 | get -i $v.index | default 0 | into int)
-    if $c1 > $c2 {
-      return 1
-    } else if ($c1 < $c2) {
-      return (-1)
-    }
+export def compare-ver [v1: string, v2: string] {
+  # Parse the version number: remove pre-release and build information,
+  # only take the main version part, and convert it to a list of numbers
+  def parse-ver [v: string] {
+    $v | str downcase | str trim -c v | str trim
+       | split row - | first | split row . | each { into int }
   }
-  return 0
+  let a = parse-ver $v1
+  let b = parse-ver $v2
+  # Compare the major, minor, and patch parts; fill in the missing parts with 0
+  # If you want to compare more parts use the following code:
+  # for i in 0..([2 ($a | length) ($b | length)] | math max)
+  for i in 0..2 {
+    let x = $a | get -i $i | default 0
+    let y = $b | get -i $i | default 0
+    if $x > $y { return 1    }
+    if $x < $y { return (-1) }
+  }
+  0
 }
 
 # Compare two version number, return true if first one is lower then second one
