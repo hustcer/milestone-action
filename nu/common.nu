@@ -9,16 +9,6 @@
 # let _TIME_FMT = '%Y-%m-%d %H:%M:%S'
 # let _UPGRADE_TAG = '$-FORCE-UPGRADE-$'
 
-# All available exit codes:
-#   0: Success
-#   1: Outdated
-#   2: Missing binary
-#   3: Missing dependency
-#   5: Condition not satisfied
-#   6: Server error
-#   7: Invalid parameter
-#   8: Auth failed
-
 export const _DATE_FMT  = '%Y.%m.%d'
 export const _TIME_FMT =  '%Y/%m/%d %H:%M:%S'
 
