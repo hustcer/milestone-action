@@ -12,7 +12,7 @@
 
 ## Usage
 
-Automatically bind milestones to merged PRs or closed issues that include a merged PR fix:
+Automatically associate milestones with merged PRs or closed issues that has a merged PR fix:
 
 ```yaml
 
@@ -98,11 +98,11 @@ Delete milestone by title or milestone number:
 
 ### FAQ
 
-1. How do I know which milestone to bind to a merged PR?
+1. How can I determine which milestone to associate with a merged PR?
 
 First, if the PR is closed without being merged, the action will take no effect. Once the PR is merged, the action will either use the milestone specified in the input or attempt to automatically determine an appropriate milestone to associate with. If no open milestone is available, the action will terminate. However, if multiple open milestones exist, the action will bind to the one with the due date closest to the PR's merge date; if no such milestone exists, it will default to the earliest-created milestone based on creation date.
 
-2. How do I know which milestone to bind to a closed issue?
+2. How can I determine which milestone to associate with a closed issue?
 
 The action will only add a milestone to a closed issue that has been resolved by a merged PR. Otherwise, the action will do nothing. The issue will then be assigned to the same milestone as the PR that fixed it.
 
