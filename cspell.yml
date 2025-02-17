@@ -13,6 +13,8 @@ words:
 - justfile
 - lefthook
 - linewise
+- deepseek
 - hovercards
+- Infinigence
 ignorePaths:
 
