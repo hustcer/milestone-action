@@ -65,7 +65,7 @@ runs:
     - name: Setup Nu
       uses: hustcer/setup-nu@v3
       with:
-        version: '0.102.0'
+        version: '0.103.0'
         enable-plugins: nu_plugin_query
 
     - name: Set Milestone
