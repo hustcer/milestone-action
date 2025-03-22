@@ -1,6 +1,21 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.7] - 2025-03-22
+
+### Features
+
+- Add DeepSeek Code review support by `hustcer/deepseek-review`
+
+### Deps
+
+- Upgrade `Nu` to **v0.103** (#114)
+- Upgrade `Nu` to v0.102 (#113)
+
+### Refactor
+
+- Refactor `compare-ver` common custom command (#111)
+
 ## [2.6.0] - 2025-01-03
 
 ### Bug Fixes
