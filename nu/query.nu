@@ -53,9 +53,9 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
     $result = (http post --content-type application/json -H $HEADERS $QUERY_API $payload
       | get data.repository.issueOrPullRequest)
 
-    $events = $result.timeline.edges.node | filter {|it| $it.stateReason? | is-not-empty }
+    $events = $result.timeline.edges.node | where {|it| $it.stateReason? | is-not-empty }
 
-    let $closers = $events | filter {|it| $it.closer?.number? | is-not-empty }
+    let $closers = $events | where {|it| $it.closer?.number? | is-not-empty }
       | select closer | flatten
       | select number milestone?.title? author.login repository.nameWithOwner mergeCommit?.abbreviatedOid? title
       | rename -c $rename
