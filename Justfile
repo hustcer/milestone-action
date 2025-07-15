@@ -26,7 +26,7 @@ alias r := release
 # Use `just --evaluate` to show env vars
 
 # Used to handle the path separator issue
-NU_DIR := parent_directory(`(which nu).path.0`)
+NU_DIR := parent_directory(`$nu.current-exe`)
 MILESTONE_ACTION_PATH := parent_directory(justfile())
 _query_plugin := if os_family() == 'windows' { 'nu_plugin_query.exe' } else { 'nu_plugin_query' }
 
