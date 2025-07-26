@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.9] - 2025-07-26
+
+### Bug Fixes
+
+- Fix getting Nu binary path for Nushell 0.106
+
+### Deps
+
+- Upgrade Nu to 0.106 and pin `hustcer/setup-nu` to v3.20 (#118)
+
 ## [2.8] - 2025-06-11
 
 ### Miscellaneous Tasks
