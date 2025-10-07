@@ -9,6 +9,7 @@
 #   [x] Close milestone by title or number
 #   [x] Delete milestone by title or number
 #   [x] Add milestone to issue that has been fixed by a PR
+#   [x] Try to inherit milestone from closing issues
 # Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
@@ -21,13 +22,13 @@ export-env {
 
 # Bind milestone to a merged PR.
 export def 'milestone-bind-for-pr' [
-  repo: string,             # Github repository name
-  --gh-token(-t): string,   # Github access token
-  --milestone(-m): string,  # Milestone name
-  --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
-  --force(-f),              # Force update milestone even if the milestone is already set.
-  --dry-run(-d),            # Dry run, only print the milestone that would be set.
-  --inherit-from-issue = true, # Try to inherit milestone from closing issues. Defaults to true.
+  repo: string,                 # Github repository name
+  --gh-token(-t): string,       # Github access token
+  --milestone(-m): string,      # Milestone name
+  --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
+  --force(-f),                  # Force update milestone even if the milestone is already set.
+  --dry-run(-d),                # Dry run, only print the milestone that would be set.
+  --inherit-from-issue = true,  # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
@@ -39,9 +40,7 @@ export def 'milestone-bind-for-pr' [
     return
   }
   let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
-  let selected = if ($milestone | is-empty) {
-    guess-milestone-for-pr $repo $pr $token $inherit_from_issue
-  } else { $milestone }
+  let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr $token $inherit_from_issue } else { $milestone }
   let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
   if $force {
     let shouldRemove = $prevMilestone != $selected
@@ -288,18 +287,18 @@ def check-gh [] {
 
 # Milestone action entry point.
 export def milestone-action [
-  action: string,             # Action to perform, could be create, close, or bind-pr.
-  repo: string,               # Github repository name
-  --gh-token(-t): string,     # Github access token
-  --milestone(-m): string,    # Milestone name
-  --title: string,            # Milestone title to create or close
-  --due-on(-d): string,       # Milestone due date, format: yyyy/mm/dd
-  --description(-D): string,  # Milestone description
-  --pr: string,               # The PR number/url/branch of the PR that we want to add milestone.
-  --issue: string,            # The Issue number that we want to add milestone.
-  --force(-f),                # Force update milestone even if the milestone is already set.
-  --dry-run(-d),              # Dry run, only print the milestone that would be set.
-  --inherit-from-issue = true, # Try to inherit milestone from closing issues. Defaults to true.
+  action: string,               # Action to perform, could be create, close, or bind-pr.
+  repo: string,                 # Github repository name
+  --gh-token(-t): string,       # Github access token
+  --milestone(-m): string,      # Milestone name
+  --title: string,              # Milestone title to create or close
+  --due-on(-d): string,         # Milestone due date, format: yyyy/mm/dd
+  --description(-D): string,    # Milestone description
+  --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
+  --issue: string,              # The Issue number that we want to add milestone.
+  --force(-f),                  # Force update milestone even if the milestone is already set.
+  --dry-run(-d),                # Dry run, only print the milestone that would be set.
+  --inherit-from-issue = true,  # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   match $action {
     close => { close-milestone $repo $milestone --gh-token $gh_token },

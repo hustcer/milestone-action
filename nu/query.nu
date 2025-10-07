@@ -7,7 +7,7 @@
 #   query-issue-closer-by-graphql nushell/nushell 13991 <token>
 #   query-issue-closer-by-graphql nushell/nushell 13966 <token>
 #   query-issue-closer-by-graphql web-infra-dev/rsbuild 3780 <token>
-#   query-pr-closing-issues nushell/nushell 14001 <token>
+#   query-pr-closing-issues nushell/nushell 13991 <token>
 
 use common.nu [hr-line]
 
