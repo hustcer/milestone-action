@@ -111,3 +111,4 @@ The action will only add a milestone to a closed issue that has been resolved by
 Licensed under:
 
 - MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
+
