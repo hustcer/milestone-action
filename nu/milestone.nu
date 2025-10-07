@@ -139,16 +139,16 @@ export def guess-milestone-for-pr [
         # If all issues have the same milestone, use it
         if ($issueMilestones | length) == 1 {
           let inherited = $issueMilestones | first
-          print $'(ansi g)✓(ansi reset) Inherited milestone (ansi p)($inherited)(ansi reset) from closing issue\(s\).'
+          print $'(char nl)(ansi g)✓(ansi reset) Inherited milestone (ansi p)($inherited)(ansi reset) from closing issues.'
           return $inherited
         } else if ($issueMilestones | length) > 1 {
-          print $'(ansi y)⚠(ansi reset) Closing issues have different milestones: ($issueMilestones | str join ", "), falling back to date-based detection.'
+          print $'(char nl)(ansi y)⚠(ansi reset) Closing issues have different milestones: ($issueMilestones | str join ", "), falling back to date-based detection.'
         } else {
-          print $'(ansi y)⚠(ansi reset) Closing issues have no milestone set, falling back to date-based detection.'
+          print $'(char nl)(ansi y)⚠(ansi reset) Closing issues have no milestone set, falling back to date-based detection.'
         }
       }
-    } catch {
-      print $'(ansi y)⚠(ansi reset) Failed to query closing issues, falling back to date-based detection.'
+    } catch { |err|
+      print $'(ansi y)⚠(ansi reset) Failed to query closing issues: ($err.msg), falling back to date-based detection.'
     }
   }
 

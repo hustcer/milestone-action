@@ -90,15 +90,30 @@ export def query-pr-closing-issues [
   const QUERY_API = 'https://api.github.com/graphql'
   let HEADERS = ['Authorization' $'bearer ($token)']
 
-  let result = (http post --content-type application/json -H $HEADERS $QUERY_API $payload
-    | get data.repository.pullRequest)
+  let response = http post --content-type application/json -H $HEADERS $QUERY_API $payload
+
+  # Check for errors in GraphQL response
+  if ($response | get -o errors) != null {
+    print $'(ansi r)GraphQL Error:(ansi reset)'
+    error make { msg: "GraphQL query failed" }
+  }
+
+  let result = $response | get data.repository.pullRequest
 
   let prMilestone = $result.milestone?.title? | default '-'
-  let closingIssues = $result.closingIssuesReferences.edges.node
-    | select number title state milestone?.title? milestone?.number?
-    | rename -c { 'milestone?.title?': 'milestone', 'milestone?.number?': 'milestoneNumber' }
+  let closingIssues = $result.closingIssuesReferences.edges
+    | each {|edge|
+        let node = $edge.node
+        {
+          number: $node.number,
+          title: $node.title,
+          state: $node.state,
+          milestone: ($node.milestone?.title? | default '-'),
+          milestoneNumber: ($node.milestone?.number? | default null)
+        }
+      }
 
-  print $'(char nl)PR (ansi p)#($prNO)(ansi reset) closes ($closingIssues | length) issue\(s\):'
+  print $'(char nl)PR (ansi p)#($prNO)(ansi reset) closes ($closingIssues | length) issues:'
   if not ($closingIssues | is-empty) {
     hr-line; $closingIssues | table -e | print
   }
