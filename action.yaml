@@ -49,6 +49,10 @@ inputs:
     required: false
     default: ''
     description: 'The milestone to set, close or delete.'
+  inherit-from-issue:
+    required: false
+    default: true
+    description: 'Try to inherit milestone from closing issues for bind-pr action. Defaults to true.'
   github-token:
     required: false
     default: '${{ github.token }}'
@@ -83,6 +87,7 @@ runs:
         let issue = '${{ github.event.issue.number }}'
         let pr = '${{ github.event.pull_request.number }}'
         let force = '${{ inputs.force }}' | into bool
+        let inheritFromIssue = '${{ inputs.inherit-from-issue }}' | into bool
         (milestone-action $action $repo
           --pr=$pr
           --issue=$issue
@@ -92,5 +97,6 @@ runs:
           --title=$title
           --due-on=$dueOn
           --description=$description
+          --inherit-from-issue=$inheritFromIssue
         )
 

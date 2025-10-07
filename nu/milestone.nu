@@ -12,7 +12,7 @@
 # Description: Scripts for Github milestone management.
 
 use common.nu [ECODE, hr-line is-installed]
-use query.nu [query-issue-closer-by-graphql]
+use query.nu [query-issue-closer-by-graphql, query-pr-closing-issues]
 
 export-env {
   $env.config.table.mode = 'light'
@@ -27,6 +27,7 @@ export def 'milestone-bind-for-pr' [
   --pr: string,             # The PR number/url/branch of the PR that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
   --dry-run(-d),            # Dry run, only print the milestone that would be set.
+  --inherit-from-issue = true, # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
@@ -37,7 +38,10 @@ export def 'milestone-bind-for-pr' [
     print $'PR (ansi p)($pr)(ansi reset) is in state (ansi p)($prState)(ansi reset), will be ignored.'
     return
   }
-  let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr } else { $milestone }
+  let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
+  let selected = if ($milestone | is-empty) {
+    guess-milestone-for-pr $repo $pr $token $inherit_from_issue
+  } else { $milestone }
   let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
   if $force {
     let shouldRemove = $prevMilestone != $selected
@@ -111,7 +115,45 @@ export def 'milestone-bind-for-issue' [
 }
 
 # Guess milestone by the merged date of the PR and the information of open milestones.
-export def guess-milestone-for-pr [repo: string, pr: string] {
+# If inherit_from_issue is true, try to get milestone from closing issues first.
+export def guess-milestone-for-pr [
+  repo: string,
+  pr: string,
+  token: string,
+  inherit_from_issue: bool = true
+] {
+  # Try to inherit milestone from closing issues
+  if $inherit_from_issue {
+    print $'(char nl)Trying to inherit milestone from closing issues for PR (ansi p)#($pr)(ansi reset)...'
+    try {
+      let prData = query-pr-closing-issues $repo ($pr | into int) $token
+      let closingIssues = $prData.closingIssues
+
+      if not ($closingIssues | is-empty) {
+        # Get unique milestones from closing issues (excluding empty ones)
+        let issueMilestones = $closingIssues
+          | where milestone != null and milestone != '-'
+          | get milestone
+          | uniq
+
+        # If all issues have the same milestone, use it
+        if ($issueMilestones | length) == 1 {
+          let inherited = $issueMilestones | first
+          print $'(ansi g)✓(ansi reset) Inherited milestone (ansi p)($inherited)(ansi reset) from closing issue\(s\).'
+          return $inherited
+        } else if ($issueMilestones | length) > 1 {
+          print $'(ansi y)⚠(ansi reset) Closing issues have different milestones: ($issueMilestones | str join ", "), falling back to date-based detection.'
+        } else {
+          print $'(ansi y)⚠(ansi reset) Closing issues have no milestone set, falling back to date-based detection.'
+        }
+      }
+    } catch {
+      print $'(ansi y)⚠(ansi reset) Failed to query closing issues, falling back to date-based detection.'
+    }
+  }
+
+  # Fall back to date-based milestone detection
+  print $'(char nl)Using date-based milestone detection for PR (ansi p)#($pr)(ansi reset)...'
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
     | select number title due_on created_at html_url
@@ -257,12 +299,13 @@ export def milestone-action [
   --issue: string,            # The Issue number that we want to add milestone.
   --force(-f),                # Force update milestone even if the milestone is already set.
   --dry-run(-d),              # Dry run, only print the milestone that would be set.
+  --inherit-from-issue = true, # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   match $action {
     close => { close-milestone $repo $milestone --gh-token $gh_token },
     delete => { delete-milestone $repo $milestone --gh-token $gh_token },
     create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
-    bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run },
+    bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run --inherit-from-issue=$inherit_from_issue },
     bind-issue => { milestone-bind-for-issue $repo -t $gh_token -m $milestone --issue ($issue | into int) --force=$force --dry-run=$dry_run },
   }
 }
