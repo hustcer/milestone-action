@@ -99,4 +99,3 @@ runs:
           --description=$description
           --inherit-from-issue=$inheritFromIssue
         )
-

@@ -1,4 +1,8 @@
-query prClosingIssues($repo_owner: String!, $repo_name: String!, $pr_number: Int!) {
+query prClosingIssues(
+  $repo_owner: String!
+  $repo_name: String!
+  $pr_number: Int!
+) {
   repository(owner: $repo_owner, name: $repo_name) {
     pullRequest(number: $pr_number) {
       number
@@ -23,4 +27,3 @@ query prClosingIssues($repo_owner: String!, $repo_name: String!, $pr_number: Int
     }
   }
 }
-

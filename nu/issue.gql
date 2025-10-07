@@ -1,4 +1,8 @@
-query issueCloser($repo_owner: String!, $repo_name: String!, $issue_number: Int!) {
+query issueCloser(
+  $repo_owner: String!
+  $repo_name: String!
+  $issue_number: Int!
+) {
   repository(owner: $repo_owner, name: $repo_name) {
     issueOrPullRequest(number: $issue_number) {
       __typename

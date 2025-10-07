@@ -14,12 +14,12 @@
 min_version: 1.7.12
 no_tty: false
 skip_output:
-  - meta              # Skips lefthook version printing
-  - skips             # Skips "skip" printing (i.e. no files matched)
-  - summary           # Skips summary block (successful and failed steps) printing
-  - success           # Skips successful steps printing
-  - failure           # Skips failed steps printing
-  - execution_info    # Skips printing `EXECUTE > ...` logging
+  - meta            # Skips lefthook version printing
+  - skips           # Skips "skip" printing (i.e. no files matched)
+  - summary         # Skips summary block (successful and failed steps) printing
+  - success         # Skips successful steps printing
+  - failure         # Skips failed steps printing
+  - execution_info  # Skips printing `EXECUTE > ...` logging
 
 pre-commit:
   parallel: true
@@ -29,5 +29,5 @@ pre-commit:
         - merge
         - rebase
       stage_fixed: true
-      glob: "*.*"
+      glob: '*.*'
       run: cspell --no-progress {staged_files}

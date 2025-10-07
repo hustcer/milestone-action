@@ -4,17 +4,16 @@
 #   npx cspell --no-progress .
 
 words:
-- ECODE
-- endfor
-- dotenv
-- nushell
-- hustcer
-- rsbuild
-- justfile
-- lefthook
-- linewise
-- deepseek
-- hovercards
-- Infinigence
+  - ECODE
+  - endfor
+  - dotenv
+  - nushell
+  - hustcer
+  - rsbuild
+  - justfile
+  - lefthook
+  - linewise
+  - deepseek
+  - hovercards
+  - Infinigence
 ignorePaths:
-
