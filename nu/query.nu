@@ -1,11 +1,13 @@
 
-# Description: Use graphql API to get the milestone of a closed PR for an issue.
+# Description: Use graphql API to get the milestone of a closed PR for an issue,
+#              or get the issues closed by a PR.
 # API: https://api.github.com/graphql
 # REF: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql
 # Usage:
 #   query-issue-closer-by-graphql nushell/nushell 13991 <token>
 #   query-issue-closer-by-graphql nushell/nushell 13966 <token>
 #   query-issue-closer-by-graphql web-infra-dev/rsbuild 3780 <token>
+#   query-pr-closing-issues nushell/nushell 14001 <token>
 
 use common.nu [hr-line]
 
@@ -66,4 +68,40 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
   }
 
   { closed: $result.closed, closedAt: $result.closedAt, closedBy: $closer, events: $events }
+}
+
+# Query PR closing issues and their milestones by GraphQL
+export def query-pr-closing-issues [
+  repo: string,         # Github repository name
+  prNO: int,            # PR number
+  token: string         # Github access token
+] {
+  let owner = $repo | split row / | first
+  let name = $repo | split row / | last
+  let pwd = $env.FILE_PWD? | default 'nu'
+  let query = open -r $'($pwd)/pr.gql'
+  let variables = {
+    pr_number: $prNO,
+    repo_name: $name,
+    repo_owner: $owner,
+  }
+
+  let payload = { query: $query, variables: $variables } | to json
+  const QUERY_API = 'https://api.github.com/graphql'
+  let HEADERS = ['Authorization' $'bearer ($token)']
+
+  let result = (http post --content-type application/json -H $HEADERS $QUERY_API $payload
+    | get data.repository.pullRequest)
+
+  let prMilestone = $result.milestone?.title? | default '-'
+  let closingIssues = $result.closingIssuesReferences.edges.node
+    | select number title state milestone?.title? milestone?.number?
+    | rename -c { 'milestone?.title?': 'milestone', 'milestone?.number?': 'milestoneNumber' }
+
+  print $'(char nl)PR (ansi p)#($prNO)(ansi reset) closes ($closingIssues | length) issue\(s\):'
+  if not ($closingIssues | is-empty) {
+    hr-line; $closingIssues | table -e | print
+  }
+
+  { pr: $prNO, prMilestone: $prMilestone, closingIssues: $closingIssues }
 }
