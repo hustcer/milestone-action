@@ -111,7 +111,7 @@ export def 'milestone-bind-for-issue' [
 }
 
 # Guess milestone by the merged date of the PR and the information of open milestones.
-def guess-milestone-for-pr [repo: string, pr: string] {
+export def guess-milestone-for-pr [repo: string, pr: string] {
   # Query github open milestone list by gh
   let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
     | select number title due_on created_at html_url
@@ -125,8 +125,9 @@ def guess-milestone-for-pr [repo: string, pr: string] {
       # + 1day to avoid the case that the PR is merged on the due date of the milestone.
       if ($it.due_on | is-empty) { (date now) - 1day } else { ($it.due_on | into datetime) + 1day }
     }
-  let mergedAt = gh pr view $pr --repo $repo --json 'mergedAt'
-    | from json | get mergedAt | into datetime
+  let mergedAt = try {
+    gh pr view $pr --repo $repo --json 'mergedAt' | from json | get mergedAt | into datetime
+  } catch { (date now | into datetime) }
   let guess = $milestones | where due_on >= $mergedAt | sort-by due_on
   if false { hr-line -c grey66; $guess | print; hr-line -c grey66 }
   let milestone = if ($guess | is-empty) {
