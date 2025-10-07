@@ -122,3 +122,4 @@ Yes, you can set `inherit-from-issue: false` in the action inputs to disable thi
 Licensed under:
 
 - MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
+
