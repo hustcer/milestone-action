@@ -86,25 +86,36 @@ Delete milestone by title or milestone number:
 
 ## Inputs
 
-| Name         | Type    | Description                                                                                                             |
-| ------------ | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| action       | String  | Action to perform: create, close, delete, bind-pr, bind-issue, defaults to `bind-pr`                                            |
-| title        | String  | Title of the milestone to create                                                                                        |
-| due-on       | String  | Due date of the milestone (yyyy-mm-dd) to create                                                                        |
-| description  | String  | Description of the milestone to create                                                                                  |
-| milestone    | String  | Title or number of the milestone to close or delete; can also be used to specify the milestone title to associate with the PR or issue |
-| force        | Boolean | If the PR or issue already has a milestone, simply remove it and assign a new one if they differ                    |
-| github-token | String  | The GitHub token to access the API for milestone management, defaults to `${{ github.token }}`                          |
+| Name               | Type    | Description                                                                                                             |
+| ------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| action             | String  | Action to perform: create, close, delete, bind-pr, bind-issue, defaults to `bind-pr`                                   |
+| title              | String  | Title of the milestone to create                                                                                       |
+| due-on             | String  | Due date of the milestone (yyyy-mm-dd) to create                                                                       |
+| description        | String  | Description of the milestone to create                                                                                 |
+| milestone          | String  | Title or number of the milestone to close or delete; can also be used to specify the milestone title to associate with the PR or issue |
+| force              | Boolean | If the PR or issue already has a milestone, simply remove it and assign a new one if they differ                       |
+| inherit-from-issue | Boolean | Try to inherit milestone from closing issues for bind-pr action. Defaults to `true`                                    |
+| github-token       | String  | The GitHub token to access the API for milestone management, defaults to `${{ github.token }}`                         |
 
 ### FAQ
 
 1. How can I determine which milestone to associate with a merged PR?
 
-First, if the PR is closed without being merged, the action will take no effect. Once the PR is merged, the action will either use the milestone specified in the input or attempt to automatically determine an appropriate milestone to associate with. If no open milestone is available, the action will terminate. However, if multiple open milestones exist, the action will bind to the one with the due date closest to the PR's merge date; if no such milestone exists, it will default to the earliest-created milestone based on creation date.
+First, if the PR is closed without being merged, the action will take no effect. Once the PR is merged, the milestone is determined using the following priority order:
+
+   - **Priority 1:** If you explicitly specify a milestone in the input, that milestone will be used.
+   - **Priority 2:** If `inherit-from-issue` is enabled (default), the action will check if the PR closes any issues. If all closing issues have the same milestone, the PR will inherit that milestone.
+   - **Priority 3:** If no milestone is inherited from issues, the action will use date-based detection. If multiple open milestones exist, the action will bind to the one with the due date closest to the PR's merge date; if no such milestone exists, it will default to the earliest-created milestone based on creation date.
+
+**Example:** If Issue #1 has milestone "1.0.0" and PR #2 closes Issue #1, then PR #2 will automatically get milestone "1.0.0" when merged.
 
 2. How can I determine which milestone to associate with a closed issue?
 
 The action will only add a milestone to a closed issue that has been resolved by a merged PR. Otherwise, the action will do nothing. The issue will then be assigned to the same milestone as the PR that fixed it.
+
+3. Can I disable milestone inheritance from issues?
+
+Yes, you can set `inherit-from-issue: false` in the action inputs to disable this feature. When disabled, the action will only use date-based milestone detection or the explicitly specified milestone.
 
 ## License
 
