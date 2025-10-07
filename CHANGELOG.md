@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.10] - 2025-10-07
+
+### Features
+
+- Try to inherit milestone from closing issues (#129)
+
+### Miscellaneous Tasks
+
+- Export guess-milestone-for-pr custom command (#124)
+
+### Deps
+
+- Upgrade Nu to v0.107 (#120)
+
 ## [2.9] - 2025-07-26
 
 ### Bug Fixes
