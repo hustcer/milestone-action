@@ -51,7 +51,7 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
   # Loop 5 times to find the milestone of the last closed PR
   loop {
     if $milestone != '-' or $tries > 5 { break }
-    print $'Try to query milestone for issue (ansi p)($issueNO)(ansi reset) the (ansi p)($tries)(ansi reset) time ...'
+    print $'Try to query milestone for issue (ansi p)($issueNO)(ansi reset) the (ansi p)($tries)(ansi reset) (if $tries == 1 { "time" } else { "times" }) ...'
     $result = (http post --content-type application/json -H $HEADERS $QUERY_API $payload
       | get data.repository.issueOrPullRequest)
 
