@@ -172,7 +172,7 @@ export def guess-milestone-for-pr [
   let guess = $milestones | where due_on >= $mergedAt | sort-by due_on
   if false { hr-line -c grey66; $guess | print; hr-line -c grey66 }
   let milestone = if ($guess | is-empty) {
-    print 'No milestone found due after the PR merged. Fall back to the earliest-created milestone.'
+    print 'No milestone found due after the PR merged. Falling back to the earliest-created milestone.'
     $milestones | sort-by created_at | first
   } else { $guess | first }
   $milestone.title
