@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.11] - 2025-10-08
+
+### Bug Fixes
+
+- Fall back to the earliest-created milestone if no due_on set for milestones (#145)
+
 ## [2.10] - 2025-10-07
 
 ### Features
@@ -9,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Export guess-milestone-for-pr custom command (#124)
+- Export `guess-milestone-for-pr` custom command (#124)
 
 ### Deps
 
