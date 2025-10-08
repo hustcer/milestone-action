@@ -164,7 +164,8 @@ export def guess-milestone-for-pr [
   $milestones | table -w 120 | print
   let milestones = $milestones | upsert due_on {|it|
       # + 1day to avoid the case that the PR is merged on the due date of the milestone.
-      if ($it.due_on | is-empty) { (date now) - 1day } else { ($it.due_on | into datetime) + 1day }
+      # If no due_on is set, use a far future date so it's always considered as a candidate
+      if ($it.due_on | is-empty) { ('2099-12-31' | into datetime) } else { ($it.due_on | into datetime) + 1day }
     }
   let mergedAt = try {
     gh pr view $pr --repo $repo --json 'mergedAt' | from json | get mergedAt | into datetime
@@ -173,7 +174,7 @@ export def guess-milestone-for-pr [
   if false { hr-line -c grey66; $guess | print; hr-line -c grey66 }
   let milestone = if ($guess | is-empty) {
     print 'No milestone found due after the PR merged. Fall back to the earliest-created milestone.'
-    $milestones | sort-by due_on created_at | first
+    $milestones | sort-by created_at | first
   } else { $guess | first }
   $milestone.title
 }
@@ -275,7 +276,9 @@ export def delete-milestone [
 }
 
 def is-int [] {
-  $in | str trim | str replace -ar '\d' '' | is-empty
+  let value = $in | str trim
+  if ($value | is-empty) { return false }
+  $value | str replace -ar '\d' '' | is-empty
 }
 
 def check-gh [] {
