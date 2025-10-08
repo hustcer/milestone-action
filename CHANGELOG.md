@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
-- Export guess-milestone-for-pr custom command (#124)
+- Export `guess-milestone-for-pr` custom command (#124)
 
 ### Deps
 
