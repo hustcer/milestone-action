@@ -164,8 +164,7 @@ export def guess-milestone-for-pr [
   $milestones | table -w 120 | print
   let milestones = $milestones | upsert due_on {|it|
       # + 1day to avoid the case that the PR is merged on the due date of the milestone.
-      # If no due_on is set, use a far future date so it's always considered as a candidate
-      if ($it.due_on | is-empty) { ('2099-12-31' | into datetime) } else { ($it.due_on | into datetime) + 1day }
+      if ($it.due_on | is-empty) { (date now) - 1day } else { ($it.due_on | into datetime) + 1day }
     }
   let mergedAt = try {
     gh pr view $pr --repo $repo --json 'mergedAt' | from json | get mergedAt | into datetime
