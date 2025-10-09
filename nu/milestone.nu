@@ -169,7 +169,7 @@ export def guess-milestone-for-pr [
   let mergedAt = try {
     gh pr view $pr --repo $repo --json 'mergedAt' | from json | get mergedAt | into datetime
   } catch { (date now | into datetime) }
-  let guess = $milestones | where due_on >= $mergedAt | sort-by due_on
+  let guess = $milestones | where due_on >= $mergedAt | sort-by due_on created_at
   if false { hr-line -c grey66; $guess | print; hr-line -c grey66 }
   let milestone = if ($guess | is-empty) {
     print 'No milestone found due after the PR merged. Falling back to the earliest-created milestone.'
