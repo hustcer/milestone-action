@@ -28,7 +28,7 @@ export def query-issue-closer-by-graphql [
 
   let payload = { query: $query, variables: $variables } | to json
   let status = query-issue-status $issueNO $payload $token
-  print 'Issue Status:'; hr-line; $status | reject events | table -e | print
+  print 'Issue Status:'; hr-line; $status | reject events | table -ew 120 | print
 
   $status
 }
@@ -115,7 +115,7 @@ export def query-pr-closing-issues [
 
   print $'(char nl)PR (ansi p)#($prNO)(ansi reset) closes ($closingIssues | length) issues:'
   if not ($closingIssues | is-empty) {
-    hr-line; $closingIssues | table -e | print
+    hr-line; $closingIssues | table -ew 120 | print
   }
 
   { pr: $prNO, prMilestone: $prMilestone, closingIssues: $closingIssues }

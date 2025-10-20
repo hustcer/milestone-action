@@ -271,7 +271,7 @@ export def delete-milestone [
   let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
   let response = $result | from json
   print $'Milestone with NO. (ansi p)($milestoneId)(ansi reset) was deleted successfully.'
-  $response | table -e | print
+  $response | table -ew 120 | print
 }
 
 def is-int [] {
