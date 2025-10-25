@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.12] - 2025-10-25
+
+### Bug Fixes
+
+- Fix some typos
+
+### Miscellaneous Tasks
+
+- Sort milestones by due date, then creation time (#153)
+- Update output table width for logs
+
+### Deps
+
+- Upgrade `Nushell` to v0.108.0
+- Upgrade `hustcer/setup-nu` to v3.21 (#155)
+
 ## [2.11] - 2025-10-08
 
 ### Bug Fixes
