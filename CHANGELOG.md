@@ -1,17 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.0] - 2025-10-26
+
+This release contains a breaking change. It now requires the `issues: write` permission to be declared in your workflow. For this reason, we have incremented the major version number.
 
 ### Bug Fixes
 
-- Fix GitHub Projects (classic) deprecation warning by using REST API instead of GraphQL (#157)
+- Try to fix GitHub Projects (classic) deprecation warning by using REST API instead of GraphQL (#157)
 - Fix "Resource not accessible by integration" error for issue milestone binding by adding `issues: write` permission
 
 ### Documentation
 
 - Update README with required permissions configuration
-- Add permissions section to workflow examples
 - Remove unnecessary `contents: write` permission requirement
 
 ## [2.12] - 2025-10-25
