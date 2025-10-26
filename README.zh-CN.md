@@ -31,7 +31,7 @@ jobs:
     name: Milestone Update
     steps:
       - name: Set Milestone for PR
-        uses: hustcer/milestone-action@v2
+        uses: hustcer/milestone-action@v3
         if: github.event.pull_request.merged == true
         with:
           action: bind-pr # `bind-pr` is the default action
@@ -40,7 +40,7 @@ jobs:
 
       # Bind milestone to closed issue that has a merged PR fix
       - name: Set Milestone for Issue
-        uses: hustcer/milestone-action@v2
+        uses: hustcer/milestone-action@v3
         if: github.event.issue.state == 'closed'
         with:
           action: bind-issue
@@ -52,7 +52,7 @@ jobs:
 
 ```yaml
 - name: Create Milestone
-  uses: hustcer/milestone-action@v2
+  uses: hustcer/milestone-action@v3
   with:
     action: create
     title: v1.0
@@ -66,7 +66,7 @@ jobs:
 
 ```yaml
 - name: Close Milestone
-  uses: hustcer/milestone-action@v2
+  uses: hustcer/milestone-action@v3
   with:
     action: close
     milestone: v1.0 # 里程碑标题或编号
@@ -78,7 +78,7 @@ jobs:
 
 ```yaml
 - name: Delete Milestone
-  uses: hustcer/milestone-action@v2
+  uses: hustcer/milestone-action@v3
   with:
     action: delete
     milestone: v1.0 # Milestone title or number
