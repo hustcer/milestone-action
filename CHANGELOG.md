@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [3.0] - 2025-10-26
 
-This release contains a breaking change. It now requires the `issues: write` permission to be declared in your workflow. For this reason, we have incremented the major version number.
+This release contains a breaking change. It now requires the `issues: write` permission to be declared in your workflow. For this reason, we have incremented the major version number to 3.
 
 ### Bug Fixes
 
