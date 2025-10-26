@@ -20,6 +20,11 @@ on:
   pull_request_target:
     types: [closed]
 
+# Action 正常工作所需的权限
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
   update-milestone:
     runs-on: ubuntu-latest

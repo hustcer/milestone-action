@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Bug Fixes
+
+- Fix GitHub Projects (classic) deprecation warning by using REST API instead of GraphQL (#157)
+- Fix "Resource not accessible by integration" error for issue milestone binding by adding `issues: write` permission
+
+### Documentation
+
+- Update README with required permissions configuration
+- Add permissions section to workflow examples
+- Remove unnecessary `contents: write` permission requirement
+
 ## [2.12] - 2025-10-25
 
 ### Bug Fixes
