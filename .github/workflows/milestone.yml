@@ -8,12 +8,6 @@ on:
   pull_request_target:
     types: [closed]
 
-# Fix GraphQL: Resource not accessible by integration (updatePullRequest)
-# Using REST API requires both pull-requests and issues write permissions
-permissions:
-  issues: write
-  pull-requests: write
-
 jobs:
   update-milestone:
     runs-on: ubuntu-latest
