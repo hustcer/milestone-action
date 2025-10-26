@@ -23,7 +23,6 @@ on:
 # Action 正常工作所需的权限
 permissions:
   issues: write
-  contents: write
   pull-requests: write
 
 jobs:

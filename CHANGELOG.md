@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - Update README with required permissions configuration
 - Add permissions section to workflow examples
+- Remove unnecessary `contents: write` permission requirement
 
 ## [2.12] - 2025-10-25
 

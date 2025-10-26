@@ -3,7 +3,7 @@
 #   @created: 2024/10/13 18:50:20
 #   Notice:
 #     Remember to change settings of the repository and update the Workflow permissions to
-#     allow "Read and write permissions" for contents, pull-requests, and issues.
+#     allow "Read and write permissions" for pull-requests and issues.
 #     Disable actions and enable it again to make it work. Don't forget to save the changes.
 # REF:
 #   - https://github.com/cli/cli

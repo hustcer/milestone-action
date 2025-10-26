@@ -25,7 +25,6 @@ on:
 # Required permissions for the action to work
 permissions:
   issues: write
-  contents: write
   pull-requests: write
 
 jobs:
