@@ -58,9 +58,13 @@ export def 'milestone-bind-for-pr' [
     return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
-  # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
+  # Using REST API to avoid GraphQL deprecation warnings for Projects (classic)
   if not $dry_run {
-    gh pr edit $pr --repo $repo --milestone $selected
+    let prNumber = $pr | str replace '#' '' | into int
+    let success = set-milestone-via-rest-api $repo $prNumber $selected 'pr'
+    if not $success {
+      error make { msg: $'Failed to set milestone for PR ($pr)' }
+    }
   }
 }
 
@@ -107,9 +111,12 @@ export def 'milestone-bind-for-issue' [
     return
   }
   print $'(char nl)Setting milestone to (ansi p)($selected)(ansi reset) for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
-  # FIXME: GraphQL: Resource not accessible by integration (updatePullRequest)
+  # Using REST API to avoid GraphQL deprecation warnings for Projects (classic)
   if not $dry_run {
-    gh issue edit $issue --repo $repo --milestone $selected
+    let success = set-milestone-via-rest-api $repo $issue $selected 'issue'
+    if not $success {
+      error make { msg: $'Failed to set milestone for Issue ($issue)' }
+    }
   }
 }
 
@@ -284,6 +291,44 @@ def check-gh [] {
   if not (is-installed 'gh') {
     print 'gh command not found, please install it first, see: https://cli.github.com/.'
     exit $ECODE.MISSING_BINARY
+  }
+}
+
+# Get milestone number by title using REST API
+def get-milestone-number [
+  repo: string,
+  milestone_title: string
+] {
+  let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
+  let found = $milestones | where title == $milestone_title
+  if ($found | is-empty) {
+    print $'(ansi r)Error:(ansi reset) Milestone (ansi p)($milestone_title)(ansi reset) not found in repository (ansi p)($repo)(ansi reset).'
+    return null
+  }
+  $found | first | get number
+}
+
+# Set milestone for PR or Issue using REST API (avoiding GraphQL deprecation warnings)
+def set-milestone-via-rest-api [
+  repo: string,
+  number: int,              # PR or Issue number
+  milestone_title: string,
+  type: string = 'pr'       # 'pr' or 'issue'
+] {
+  # Get milestone number by title
+  let milestone_number = get-milestone-number $repo $milestone_title
+  if ($milestone_number | is-empty) {
+    error make { msg: $'Milestone "($milestone_title)" not found' }
+  }
+
+  # Use REST API to update PR/Issue
+  # Note: In GitHub API, both PRs and Issues use the /issues endpoint for updates
+  try {
+    gh api -X PATCH $'/repos/($repo)/issues/($number)' -f $'milestone=($milestone_number)' | ignore
+    return true
+  } catch { |err|
+    print $'(ansi r)Error:(ansi reset) Failed to set milestone: ($err.msg)'
+    return false
   }
 }
 
