@@ -160,7 +160,7 @@ export def guess-milestone-for-pr [
 
   # Fall back to date-based milestone detection
   print $'(char nl)Using date-based milestone detection for PR (ansi p)#($pr)(ansi reset)...'
-  # Query github open milestone list by http
+  # Query GitHub open milestone list by http
   let milestones = github-api-paginate $'https://api.github.com/repos/($repo)/milestones'
     | select number title due_on created_at html_url
   if ($milestones | is-empty) {
@@ -235,9 +235,7 @@ export def create-milestone [
   if ($due_on | is-not-empty) {
     $body = ($body | insert due_on ($due_on | into datetime | format date $STD_TIME))
   }
-  if ($description | is-not-empty) {
-    $body = ($body | insert description $description)
-  }
+  if ($description | is-not-empty) { $body = ($body | insert description $description) }
 
   let milestone = http post --content-type 'application/json' --headers (get-github-headers) $'https://api.github.com/repos/($repo)/milestones' $body
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
@@ -309,16 +307,16 @@ def get-github-headers [] {
   }
   {
     'Authorization': $'Bearer ($token)',
+    'X-GitHub-Api-Version': '2022-11-28',
     'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
   }
 }
 
 # Helper function to handle GitHub API pagination
 def github-api-paginate [url: string] {
-  mut results = []
   mut page = 1
   mut has_more = true
+  mut results = []
 
   while $has_more {
     let page_url = $'($url)?page=($page)&per_page=100'
@@ -328,11 +326,7 @@ def github-api-paginate [url: string] {
       $has_more = false
     } else {
       $results = ($results | append $response)
-      if ($response | length) < 100 {
-        $has_more = false
-      } else {
-        $page = $page + 1
-      }
+      if ($response | length) < 100 { $has_more = false } else { $page = $page + 1 }
     }
   }
 
