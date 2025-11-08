@@ -160,8 +160,8 @@ export def guess-milestone-for-pr [
 
   # Fall back to date-based milestone detection
   print $'(char nl)Using date-based milestone detection for PR (ansi p)#($pr)(ansi reset)...'
-  # Query github open milestone list by gh
-  let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
+  # Query github open milestone list by http
+  let milestones = github-api-paginate $'https://api.github.com/repos/($repo)/milestones'
     | select number title due_on created_at html_url
   if ($milestones | is-empty) {
     print 'No open milestones found.'
@@ -229,10 +229,17 @@ export def create-milestone [
   check-gh
   const STD_TIME = '%Y-%m-%dT%H:%M:%SZ'
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let dueOnArg = if ($due_on | is-empty) { [] } else { [-F $'due_on=($due_on | into datetime | format date $STD_TIME)'] }
-  let descArg = if ($description | is-empty) { [] } else { [-F $'description=($description)'] }
-  let result = gh api -X POST $'/repos/($repo)/milestones' -F $'title=($title)' ...$dueOnArg ...$descArg
-  let milestone = $result | from json
+
+  # Build request body
+  mut body = { title: $title }
+  if ($due_on | is-not-empty) {
+    $body = ($body | insert due_on ($due_on | into datetime | format date $STD_TIME))
+  }
+  if ($description | is-not-empty) {
+    $body = ($body | insert description $description)
+  }
+
+  let milestone = http post --content-type 'application/json' --headers (get-github-headers) $'https://api.github.com/repos/($repo)/milestones' $body
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
   echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
 }
@@ -246,15 +253,15 @@ export def close-milestone [
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let milestones = gh api $'/repos/($repo)/milestones' | from json
+    let milestones = http get --headers (get-github-headers) $'https://api.github.com/repos/($repo)/milestones'
     let milestone = $milestones | where title == $milestone
     if ($milestone | is-empty) {
       print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
     }
     $milestone.0.number
   }
-  let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
-  let milestone = $result | from json
+
+  let milestone = http patch --content-type 'application/json' --headers (get-github-headers) $'https://api.github.com/repos/($repo)/milestones/($milestoneId)' { state: 'closed' }
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was closed successfully.'
   echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
 }
@@ -268,15 +275,15 @@ export def delete-milestone [
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let milestones = gh api $'/repos/($repo)/milestones' | from json
+    let milestones = http get --headers (get-github-headers) $'https://api.github.com/repos/($repo)/milestones'
     let milestone = $milestones | where title == $milestone
     if ($milestone | is-empty) {
       print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
     }
     $milestone.0.number
   }
-  let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
-  let response = $result | from json
+
+  let response = http delete --headers (get-github-headers) --allow-errors $'https://api.github.com/repos/($repo)/milestones/($milestoneId)'
   print $'Milestone with NO. (ansi p)($milestoneId)(ansi reset) was deleted successfully.'
   $response | table -ew 120 | print
 }
@@ -294,12 +301,50 @@ def check-gh [] {
   }
 }
 
+# Helper function to get GitHub API headers with authentication
+def get-github-headers [] {
+  let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
+  if ($token | is-empty) {
+    error make { msg: 'GitHub token not found. Please set GH_TOKEN or GITHUB_TOKEN environment variable.' }
+  }
+  {
+    'Authorization': $'Bearer ($token)',
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  }
+}
+
+# Helper function to handle GitHub API pagination
+def github-api-paginate [url: string] {
+  mut results = []
+  mut page = 1
+  mut has_more = true
+
+  while $has_more {
+    let page_url = $'($url)?page=($page)&per_page=100'
+    let response = http get --headers (get-github-headers) $page_url
+
+    if ($response | is-empty) {
+      $has_more = false
+    } else {
+      $results = ($results | append $response)
+      if ($response | length) < 100 {
+        $has_more = false
+      } else {
+        $page = $page + 1
+      }
+    }
+  }
+
+  $results
+}
+
 # Get milestone number by title using REST API
 def get-milestone-number [
   repo: string,
   milestone_title: string
 ] {
-  let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
+  let milestones = github-api-paginate $'https://api.github.com/repos/($repo)/milestones'
   let found = $milestones | where title == $milestone_title
   if ($found | is-empty) {
     print $'(ansi r)Error:(ansi reset) Milestone (ansi p)($milestone_title)(ansi reset) not found in repository (ansi p)($repo)(ansi reset).'
@@ -324,7 +369,7 @@ def set-milestone-via-rest-api [
   # Use REST API to update PR/Issue
   # Note: In GitHub API, both PRs and Issues use the /issues endpoint for updates
   try {
-    gh api -X PATCH $'/repos/($repo)/issues/($number)' -f $'milestone=($milestone_number)' | ignore
+    http patch --content-type 'application/json' --headers (get-github-headers) $'https://api.github.com/repos/($repo)/issues/($number)' { milestone: $milestone_number } | ignore
     return true
   } catch { |err|
     print $'(ansi r)Error:(ansi reset) Failed to set milestone: ($err.msg)'
