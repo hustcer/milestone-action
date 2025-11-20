@@ -62,9 +62,10 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
       | select number milestone?.title? author.login repository.nameWithOwner mergeCommit?.abbreviatedOid? title
       | rename -c $rename
 
-    $tries += 1; sleep 3sec
     $closer = if ($closers | is-empty) { {} } else { $closers | last }
     $milestone = $closer.milestone? | default '-'
+    if $milestone != '-' { break }
+    $tries += 1; sleep 3sec
   }
 
   { closed: $result.closed, closedAt: $result.closedAt, closedBy: $closer, events: $events }
