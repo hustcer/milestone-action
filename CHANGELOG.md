@@ -1,6 +1,29 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.1] - 2026-01-23
+
+### Documentation
+
+- Update milestone-action version in README (#162)
+
+### Features
+
+- Break before sleep when milestone found
+
+### Miscellaneous Tasks
+
+- Update README.md (#166)
+
+### Deps
+
+- Update Nu to 0.109.1
+- Update Nushell to 0.110.0 (#167)
+- Upgrade hustcer/setup-nu to v3.22
+
+# Changelog
+All notable changes to this project will be documented in this file.
+
 ## [3.0] - 2025-10-26
 
 This release introduces changes that may impact some users. If the action fails due to insufficient permissions, please add the `issues: write` and `pull-requests: write` permissions to your workflow. Additionally, the API for binding milestones has been modified. Due to these changes, the major version has been incremented to 3.
