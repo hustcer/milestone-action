@@ -67,9 +67,9 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Nu
-      uses: hustcer/setup-nu@v3.25
+      uses: hustcer/setup-nu@v3.27
       with:
-        version: '0.113.1'
+        version: '0.115.0'
         enable-plugins: nu_plugin_query
 
     - name: Set Milestone
