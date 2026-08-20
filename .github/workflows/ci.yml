@@ -1,7 +1,7 @@
 # Description:
 #   - Create, Close and Delete a milestone.
 
-name: Milestone Operations@develop
+name: Milestone Operations@local
 on:
   pull_request:
   workflow_dispatch:
@@ -15,9 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Milestone Operates
     steps:
+      # Required by `uses: ./`, so that CI exercises the code under review
+      # instead of the published action from a remote branch.
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Create Milestone
         id: create
-        uses: hustcer/milestone-action@develop
+        uses: ./
         with:
           action: create
           title: 'v0.0.1'
@@ -27,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Close Milestone
         id: close
-        uses: hustcer/milestone-action@develop
+        uses: ./
         with:
           action: close
           milestone: 'v0.0.1'
@@ -35,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Delete Milestone
         id: delete
-        uses: hustcer/milestone-action@develop
+        uses: ./
         with:
           action: delete
           milestone: ${{ steps.create.outputs.milestone-number }}
