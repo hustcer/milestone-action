@@ -207,12 +207,18 @@ export def guess-milestone-for-issue [
 export def create-milestone [
   repo: string,               # Github repository name
   title: string,              # Milestone title
-  --due-on(-d): string,       # Milestone due date, format: yyyy/mm/dd
+  --due-on(-d): string,       # Milestone due date, format: yyyy-mm-dd
   --description(-D): string,  # Milestone description
   --gh-token(-t): string,     # Github access token
 ] {
   check-gh
   const STD_TIME = '%Y-%m-%dT%H:%M:%SZ'
+  # A milestone without a title is always a mistake, and the Github API would happily
+  # create one from whatever placeholder we passed, so fail loudly instead.
+  if ($title | is-empty) {
+    print $'(ansi r)Error:(ansi reset) A non-empty `title` is required by the `create` action.'
+    exit $ECODE.INVALID_PARAMETER
+  }
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let dueOnArg = if ($due_on | is-empty) { [] } else { [-F $'due_on=($due_on | into datetime | format date $STD_TIME)'] }
   let descArg = if ($description | is-empty) { [] } else { [-F $'description=($description)'] }
@@ -337,8 +343,8 @@ export def milestone-action [
   repo: string,                 # Github repository name
   --gh-token(-t): string,       # Github access token
   --milestone(-m): string,      # Milestone name
-  --title: string,              # Milestone title to create or close
-  --due-on(-d): string,         # Milestone due date, format: yyyy/mm/dd
+  --title: string = '',         # Milestone title to create or close
+  --due-on(-d): string,         # Milestone due date, format: yyyy-mm-dd
   --description(-D): string,    # Milestone description
   --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
   --issue: string,              # The Issue number that we want to add milestone.

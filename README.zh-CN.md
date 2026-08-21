@@ -56,7 +56,7 @@ jobs:
   with:
     action: create
     title: v1.0
-    due-on: 2025-05-01
+    due-on: 2026-05-01
     description: 'The first milestone of the project.'
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
 | 名称               | 类型    | 描述                                                                                   |
 | ------------------ | ------- | -------------------------------------------------------------------------------------- |
 | action             | String  | 要执行的操作, 可能的值未：create, close, delete, bind-pr, bind-issue，默认为 `bind-pr` |
-| title              | String  | 要创建的里程碑标题                                                                     |
+| title              | String  | 要创建的里程碑标题，`create` 操作必填                                                  |
 | due-on             | String  | 要创建的里程碑的截止日期（yyyy-mm-dd）                                                 |
 | description        | String  | 要创建的里程碑描述信息                                                                 |
 | milestone          | String  | 要关闭或删除的里程碑标题或编号，也可用于指定要绑定到 PR 或 issue 的里程碑标题          |

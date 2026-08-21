@@ -6,5 +6,5 @@
   "license": "MIT",
   "github": "https://github.com/hustcer/milestone-action",
   "home": "https://github.com/marketplace/actions/milestone-action",
-  "description": "A Github action to create, close milestones and set milestone to merged PRs or closed issues."
+  "description": "A Github action to create, close, delete milestones and set milestone to merged PRs or closed issues."
 }

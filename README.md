@@ -58,7 +58,7 @@ Create milestone by title, description and due date:
   with:
     action: create
     title: v1.0
-    due-on: 2025-05-01
+    due-on: 2026-05-01
     description: 'The first milestone of the project.'
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -93,7 +93,7 @@ Delete milestone by title or milestone number:
 | Name               | Type    | Description                                                                                                                            |
 | ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | action             | String  | Action to perform: create, close, delete, bind-pr, bind-issue, defaults to `bind-pr`                                                   |
-| title              | String  | Title of the milestone to create                                                                                                       |
+| title              | String  | Title of the milestone to create, required by the `create` action                                                                      |
 | due-on             | String  | Due date of the milestone to create (format: yyyy-mm-dd)                                                                               |
 | description        | String  | Description of the milestone to create                                                                                                 |
 | milestone          | String  | Title or number of the milestone to close or delete; can also be used to specify the milestone title to associate with the PR or issue |
