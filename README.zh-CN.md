@@ -99,8 +99,9 @@ jobs:
 | inherit-from-issue | Boolean | 对于 bind-pr 操作，尝试从关闭的 issues 继承里程碑。默认为 `true`                       |
 | github-token       | String  | 用于访问 API 进行里程碑管理的 GitHub Token，默认为 `${{ github.token }}`               |
 
-> **注意：** 全部由数字组成的 `milestone` 取值一律按里程碑**编号**解析，而非标题。
+> **注意：** 对 `close` 和 `delete`，全部由数字组成的 `milestone` 取值按里程碑**编号**解析，而非标题，
 > 因此标题为纯数字的里程碑（如 `20260821`）只能通过编号关闭或删除。
+> 对 `bind-pr` 和 `bind-issue`，`milestone` 仅按**标题**匹配。
 
 ### 常见问题
 

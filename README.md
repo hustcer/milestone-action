@@ -101,8 +101,9 @@ Delete milestone by title or milestone number:
 | inherit-from-issue | Boolean | Try to inherit milestone from closing issues for bind-pr action. Defaults to `true`                                                    |
 | github-token       | String  | The GitHub token to access the API for milestone management, defaults to `${{ github.token }}`                                         |
 
-> **Note:** an all-digit `milestone` value is always read as a milestone **number**, never as a title.
-> A milestone whose title is all digits (e.g. `20260821`) must therefore be closed or deleted by its number.
+> **Note:** for `close` and `delete`, an all-digit `milestone` value is read as a milestone **number**, never as a
+> title, so a milestone whose title is all digits (e.g. `20260821`) must be closed or deleted by its number.
+> For `bind-pr` and `bind-issue`, `milestone` is matched by **title** only.
 
 ### FAQ
 

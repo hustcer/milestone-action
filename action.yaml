@@ -48,7 +48,7 @@ inputs:
   milestone:
     required: false
     default: ''
-    description: 'The milestone to set, close or delete, by title or number. An all-digit value is always read as a number, never as a title.'
+    description: 'The milestone to set, close or delete. `close`/`delete` take a title or a number, and an all-digit value is read as a number. `bind-pr`/`bind-issue` match by title only.'
   inherit-from-issue:
     required: false
     default: true
