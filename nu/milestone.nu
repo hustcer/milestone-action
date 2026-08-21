@@ -215,7 +215,7 @@ export def create-milestone [
   const STD_TIME = '%Y-%m-%dT%H:%M:%SZ'
   # A milestone without a title is always a mistake, and the Github API would happily
   # create one from whatever placeholder we passed, so fail loudly instead.
-  if ($title | is-empty) {
+  if ($title | str trim | is-empty) {
     print $'(ansi r)Error:(ansi reset) A non-empty `title` is required by the `create` action.'
     exit $ECODE.INVALID_PARAMETER
   }
@@ -343,7 +343,7 @@ export def milestone-action [
   repo: string,                 # Github repository name
   --gh-token(-t): string,       # Github access token
   --milestone(-m): string,      # Milestone name
-  --title: string = '',         # Milestone title to create or close
+  --title: string = '',         # Milestone title to create
   --due-on(-d): string,         # Milestone due date, format: yyyy-mm-dd
   --description(-D): string,    # Milestone description
   --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
