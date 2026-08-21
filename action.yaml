@@ -31,16 +31,16 @@ inputs:
     description: 'The action to perform, should be bind-pr,bind-issue,create, delete or close. Defaults to bind-pr.'
   title:
     required: false
-    default: '1.0.0'
-    description: 'The title of the milestone to create.'
+    default: ''
+    description: 'The title of the milestone to create. Required by the `create` action.'
   description:
     required: false
-    default: 'The first milestone.'
+    default: ''
     description: 'The description of the milestone to create.'
   due-on:
     required: false
     default: ''
-    description: 'The due date of the milestone to create.'
+    description: 'The due date of the milestone to create, format: yyyy-mm-dd.'
   force:
     required: false
     default: false

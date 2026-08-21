@@ -22,13 +22,29 @@ jobs:
         with:
           persist-credentials: false
 
+      # `shell: nu` needs Nu on the runner. The action installs it as well, but only
+      # from inside its own first step, which runs after this one.
+      - name: Setup Nu
+        uses: hustcer/setup-nu@v3.27
+        with:
+          version: '0.115.0'
+
+      # Derive the due date at run time: a hard-coded one silently drifts into the past
+      # and the "milestone due in the future" intent of this test quietly disappears.
+      - name: Compute Due Date
+        id: due
+        shell: nu {0}
+        run: |
+          let dueOn = ((date now) | date to-timezone UTC) + 365day | format date '%Y-%m-%d'
+          $'date=($dueOn)(char nl)' | save --append $env.GITHUB_OUTPUT
+
       - name: Create Milestone
         id: create
         uses: ./
         with:
           action: create
           title: 'v0.0.1'
-          due-on: '2025/12/31'
+          due-on: ${{ steps.due.outputs.date }}
           description: 'Test Create Milestone'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,3 +64,19 @@ jobs:
           milestone: ${{ steps.create.outputs.milestone-number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # `create` without a title used to fall back to a '1.0.0' placeholder milestone.
+      - name: Create Milestone Without Title
+        id: no-title
+        continue-on-error: true
+        uses: ./
+        with:
+          action: create
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Assert Create Without Title Failed
+        if: steps.no-title.outcome != 'failure'
+        shell: nu {0}
+        run: |
+          print '::error::`create` without a title should fail instead of creating a placeholder milestone'
+          exit 1
