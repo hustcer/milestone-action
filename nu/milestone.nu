@@ -160,8 +160,9 @@ export def guess-milestone-for-pr [
 
   # Fall back to date-based milestone detection
   print $'(char nl)Using date-based milestone detection for PR (ansi p)#($pr)(ansi reset)...'
-  # Query github open milestone list by gh
-  let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
+  # Query github open milestone list by gh. `state=open` is intentional here:
+  # date-based detection should only ever consider milestones still open.
+  let milestones = gh api -X GET $'/repos/($repo)/milestones' -f state=open --paginate | from json
     | select number title due_on created_at html_url
   if ($milestones | is-empty) {
     print 'No open milestones found.'
@@ -246,12 +247,11 @@ export def close-milestone [
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let milestones = gh api $'/repos/($repo)/milestones' | from json
-    let milestone = $milestones | where title == $milestone
-    if ($milestone | is-empty) {
+    let found = list-milestones $repo | where title == $milestone
+    if ($found | is-empty) {
       print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
     }
-    $milestone.0.number
+    $found.0.number
   }
   let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
   let milestone = $result | from json
@@ -268,12 +268,11 @@ export def delete-milestone [
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
   let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let milestones = gh api $'/repos/($repo)/milestones' | from json
-    let milestone = $milestones | where title == $milestone
-    if ($milestone | is-empty) {
+    let found = list-milestones $repo | where title == $milestone
+    if ($found | is-empty) {
       print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
     }
-    $milestone.0.number
+    $found.0.number
   }
   let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
   let response = $result | from json
@@ -294,13 +293,19 @@ def check-gh [] {
   }
 }
 
+# List every milestone of a repository, open and closed alike.
+# `state=all` is required because the REST API defaults to `state=open`, and
+# `--paginate` because a single page only holds 30 milestones.
+def list-milestones [repo: string] {
+  gh api -X GET $'/repos/($repo)/milestones' -f state=all --paginate | from json
+}
+
 # Get milestone number by title using REST API
 def get-milestone-number [
   repo: string,
   milestone_title: string
 ] {
-  let milestones = gh api -X GET $'/repos/($repo)/milestones' --paginate | from json
-  let found = $milestones | where title == $milestone_title
+  let found = list-milestones $repo | where title == $milestone_title
   if ($found | is-empty) {
     print $'(ansi r)Error:(ansi reset) Milestone (ansi p)($milestone_title)(ansi reset) not found in repository (ansi p)($repo)(ansi reset).'
     return null
@@ -344,7 +349,7 @@ export def milestone-action [
   --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
   --issue: string,              # The Issue number that we want to add milestone.
   --force(-f),                  # Force update milestone even if the milestone is already set.
-  --dry-run(-d),                # Dry run, only print the milestone that would be set.
+  --dry-run,                    # Dry run, only print the milestone that would be set.
   --inherit-from-issue = true,  # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   match $action {
@@ -353,6 +358,7 @@ export def milestone-action [
     create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
     bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run --inherit-from-issue=$inherit_from_issue },
     bind-issue => { milestone-bind-for-issue $repo -t $gh_token -m $milestone --issue ($issue | into int) --force=$force --dry-run=$dry_run },
+    _ => { error make { msg: $'Invalid action: ($action)' } },
   }
 }
 
