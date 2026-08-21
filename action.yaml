@@ -75,19 +75,34 @@ runs:
     - name: Set Milestone
       shell: nu {0}
       id: action
+      # Inputs are passed through the environment instead of being interpolated into the
+      # script body. `${{ }}` expansion happens before the script is written to disk, so
+      # any input containing a quote could otherwise break out of the string literal and
+      # execute arbitrary Nushell code on the runner.
+      env:
+        INPUT_ACTION: ${{ inputs.action }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_FORCE: ${{ inputs.force }}
+        INPUT_DUE_ON: ${{ inputs.due-on }}
+        INPUT_MILESTONE: ${{ inputs.milestone }}
+        INPUT_DESCRIPTION: ${{ inputs.description }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_INHERIT_FROM_ISSUE: ${{ inputs.inherit-from-issue }}
+        EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         use ${{ github.action_path }}/nu/milestone.nu *
-        let action = '${{ inputs.action }}'
-        let repo = '${{ github.repository }}'
-        let title = '${{ inputs.title }}'
-        let dueOn = '${{ inputs.due-on }}'
-        let description = '${{ inputs.description }}'
-        let token = '${{ inputs.github-token }}'
-        let milestone = '${{ inputs.milestone }}'
-        let issue = '${{ github.event.issue.number }}'
-        let pr = '${{ github.event.pull_request.number }}'
-        let force = '${{ inputs.force }}' | into bool
-        let inheritFromIssue = '${{ inputs.inherit-from-issue }}' | into bool
+        let action = $env.INPUT_ACTION
+        let repo = $env.GITHUB_REPOSITORY
+        let title = $env.INPUT_TITLE
+        let dueOn = $env.INPUT_DUE_ON
+        let description = $env.INPUT_DESCRIPTION
+        let token = $env.INPUT_GITHUB_TOKEN
+        let milestone = $env.INPUT_MILESTONE
+        let issue = $env.EVENT_ISSUE_NUMBER
+        let pr = $env.EVENT_PR_NUMBER
+        let force = if ($env.INPUT_FORCE | is-empty) { false } else { $env.INPUT_FORCE | into bool }
+        let inheritFromIssue = if ($env.INPUT_INHERIT_FROM_ISSUE | is-empty) { true } else { $env.INPUT_INHERIT_FROM_ISSUE | into bool }
         (milestone-action $action $repo
           --pr=$pr
           --issue=$issue

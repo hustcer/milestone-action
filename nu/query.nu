@@ -11,6 +11,10 @@
 
 use common.nu [hr-line]
 
+# Resolve the directory of this module at parse time, so that the `.gql` files can be
+# located no matter what the current working directory or the entry script path is.
+const GQL_DIR = path self .
+
 export def query-issue-closer-by-graphql [
   repo: string,         # Github repository name
   issueNO: int,         # Issue number
@@ -18,8 +22,7 @@ export def query-issue-closer-by-graphql [
 ] {
   let owner = $repo | split row / | first
   let name = $repo | split row / | last
-  let pwd = $env.FILE_PWD? | default 'nu'
-  let query = open -r $'($pwd)/issue.gql'
+  let query = open -r ($GQL_DIR | path join 'issue.gql')
   let variables = {
     repo_name: $name,
     repo_owner: $owner,
@@ -79,8 +82,7 @@ export def query-pr-closing-issues [
 ] {
   let owner = $repo | split row / | first
   let name = $repo | split row / | last
-  let pwd = $env.FILE_PWD? | default 'nu'
-  let query = open -r $'($pwd)/pr.gql'
+  let query = open -r ($GQL_DIR | path join 'pr.gql')
   let variables = {
     pr_number: $prNO,
     repo_name: $name,

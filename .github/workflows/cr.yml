@@ -25,19 +25,16 @@ jobs:
         uses: hustcer/deepseek-review@main
         with:
           max-length: 50000
-          # model: 'deepseek-v3'                          # Infinigence's DeepSeek V3 model
-          model: 'deepseek-r1'                            # Infinigence's DeepSeek R1 model
+          # model: 'deepseek-v4'                          # Infinigence's DeepSeek V4 model
+          model: 'deepseek-v4-flash'                      # Infinigence's DeepSeek flash model
           base-url: 'https://cloud.infini-ai.com/maas/v1' # Infinigence's API base URL
-          # model: 'deepseek-ai/DeepSeek-V3'              # SiliconFlow's DeepSeek V3 model
-          # model: 'deepseek-ai/DeepSeek-R1'              # SiliconFlow's DeepSeek R1 model
-          # base-url: 'https://api.siliconflow.cn/v1'     # SiliconFlow's API base URL
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
           sys-prompt: >
             As a senior Nushell engineer, perform comprehensive script review with focus on:
 
             ### 1. Core Requirements:
-            - Validate Nu 0.108+ compatibility
+            - Validate Nu 0.112+ compatibility
             - Check structured data handling
             - Verify pipeline efficiency
             - Assess module organization
@@ -55,7 +52,7 @@ jobs:
             - Parallel execution opportunities
 
             **Rules:**
-            - Target Nu 0.108+ features
+            - Target Nu 0.112+ features
             - Highlight data flow vulnerabilities
             - Suggest structured data optimizations
             - Keep feedback Nu-specific
