@@ -11,6 +11,8 @@
 # Usage:
 #   Change `version` in meta.json and then run: `just release` OR `just release true`
 
+use common.nu [has-ref]
+
 export def 'make-release' [
   --update-log(-u)    # Add flag to enable updating CHANGELOG.md
 ] {

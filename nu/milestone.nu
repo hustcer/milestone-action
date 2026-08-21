@@ -42,16 +42,8 @@ export def 'milestone-bind-for-pr' [
   let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
   let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr $token $inherit_from_issue } else { $milestone }
   let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
-  if $force {
-    let shouldRemove = $prevMilestone != $selected
-    if $dry_run and $shouldRemove {
-      print $'(char nl)Would remove milestone for PR (ansi p)($pr)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
-    } else if $shouldRemove {
-      gh pr edit $pr --repo $repo --remove-milestone
-    } else {
-      print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
-    }
-  }
+  # No explicit removal is needed on the force path: the REST PATCH below overwrites
+  # whatever milestone is currently set.
   let ignoreSet = not $force and $prevMilestone != '-'
   if $prevMilestone == $selected or $ignoreSet {
     print $'(char nl)Milestone for PR (ansi p)($pr)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
@@ -91,16 +83,8 @@ export def 'milestone-bind-for-issue' [
   let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
   let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? | default '-' } else { $milestone }
   let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
-  if $force {
-    let shouldRemove = $prevMilestone != $selected
-    if $dry_run and $shouldRemove {
-      print $'(char nl)Would remove milestone for Issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset) ...'
-    } else if $shouldRemove {
-      gh issue edit $issue --repo $repo --remove-milestone
-    } else {
-      print $'(char nl)Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
-    }
-  }
+  # No explicit removal is needed on the force path: the REST PATCH below overwrites
+  # whatever milestone is currently set.
   if $selected == '-' {
     print $'No milestone found for issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset).'
     return
@@ -235,7 +219,7 @@ export def create-milestone [
   let result = gh api -X POST $'/repos/($repo)/milestones' -F $'title=($title)' ...$dueOnArg ...$descArg
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
-  echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
+  set-action-output 'milestone-number' $milestone.number
 }
 
 # Close milestone for a repository by title or number.
@@ -256,7 +240,7 @@ export def close-milestone [
   let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was closed successfully.'
-  echo $'milestone-number=($milestone.number)' o>> $env.GITHUB_OUTPUT
+  set-action-output 'milestone-number' $milestone.number
 }
 
 # Delete milestone for a repository by title or number.
@@ -280,10 +264,20 @@ export def delete-milestone [
   $response | table -ew 120 | print
 }
 
+# Write a key/value pair to $env.GITHUB_OUTPUT when running inside Github Actions.
+# Outside Actions (local `just`, manual debugging) the variable is absent, so this is a no-op.
+def set-action-output [key: string, value: any] {
+  if ($env.GITHUB_OUTPUT? | is-not-empty) {
+    $'($key)=($value)(char nl)' | save --append $env.GITHUB_OUTPUT
+  }
+}
+
+# Only plain ASCII digits count: `\d` in Rust regex matches the whole Unicode Nd
+# category, so '１２３' would otherwise be treated as a milestone number.
 def is-int [] {
   let value = $in | str trim
   if ($value | is-empty) { return false }
-  $value | str replace -ar '\d' '' | is-empty
+  $value =~ '^[0-9]+$'
 }
 
 def check-gh [] {

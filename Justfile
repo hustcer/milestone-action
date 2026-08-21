@@ -55,6 +55,6 @@ di *OPTIONS:
   @overlay use {{ join(MILESTONE_ACTION_PATH, 'nu', 'milestone.nu') }}; \
   milestone-action bind-issue {{OPTIONS}} --dry-run
 
-# Plugins need to be registered only once after nu v0.61
+# Plugins need to be added only once, `register` was replaced by `plugin add` in nu v0.93
 _setup:
-  @register -e json {{ join(NU_DIR, _query_plugin) }}
+  @plugin add {{ join(NU_DIR, _query_plugin) }}
