@@ -19,6 +19,8 @@ jobs:
       # instead of the published action from a remote branch.
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Create Milestone
         id: create
