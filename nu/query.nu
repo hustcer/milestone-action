@@ -38,8 +38,8 @@ export def query-issue-closer-by-graphql [
 
 # Abort with the actual GraphQL diagnostics instead of letting a missing `data`
 # field surface later as an inscrutable column-not-found error.
-def check-graphql-errors [response: any] {
-  let errors = $response | get -o errors
+def check-graphql-errors []: record -> nothing {
+  let errors = $in | get -o errors
   if ($errors | is-not-empty) {
     print $'(ansi r)GraphQL Error:(ansi reset)'
     $errors | table -e | print
@@ -67,7 +67,7 @@ def query-issue-status [issueNO: int, payload: string, token: string] {
     if $milestone != '-' or $tries > 5 { break }
     print $'Try to query milestone for issue (ansi p)($issueNO)(ansi reset) the (ansi p)($tries)(ansi reset) (if $tries == 1 { "time" } else { "times" }) ...'
     let response = http post --content-type application/json -H $HEADERS $QUERY_API $payload
-    check-graphql-errors $response
+    $response | check-graphql-errors
     $result = ($response | get data.repository.issueOrPullRequest)
 
     $events = $result.timeline.edges.node | where {|it| $it.stateReason? | is-not-empty }
@@ -107,7 +107,7 @@ export def query-pr-closing-issues [
 
   let response = http post --content-type application/json -H $HEADERS $QUERY_API $payload
 
-  check-graphql-errors $response
+  $response | check-graphql-errors
 
   let result = $response | get data.repository.pullRequest
 

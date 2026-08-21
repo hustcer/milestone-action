@@ -48,6 +48,25 @@ export def get-env [
   $env | get -o $key | default $default
 }
 
+# Parse a Github Actions input into a boolean. Every input reaches the action as a string,
+# and `into bool` only understands 'true'/'false'/'1'/'0' - a perfectly reasonable `force: yes`
+# would otherwise abort the run with a raw Nushell conversion error. An empty string means the
+# input was not supplied, so it falls back to that input's documented default.
+export def parse-bool [
+  fallback: bool,   # The value to use when the input is empty
+]: string -> bool {
+  let value = $in | str trim | str lowercase
+  if ($value | is-empty) { return $fallback }
+  match $value {
+    'true' | 'yes' | 'on' | '1' => true,
+    'false' | 'no' | 'off' | '0' => false,
+    _ => {
+      print $'(ansi r)Error:(ansi reset) Expected a boolean value, got (ansi p)($value)(ansi reset).'
+      exit $ECODE.INVALID_PARAMETER
+    },
+  }
+}
+
 # Check if a git repo has the specified ref: could be a branch or tag, etc.
 export def has-ref [
   ref: string   # The git ref to check

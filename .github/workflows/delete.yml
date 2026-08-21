@@ -1,7 +1,7 @@
 # Description:
 #   - Delete a milestone by title or number.
 
-name: Milestone Delete@develop
+name: Milestone Delete@local
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +11,7 @@ on:
 
 # Fix GraphQL: Resource not accessible by integration (updatePullRequest)
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
@@ -18,9 +19,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Delete Milestone
     steps:
+      # Required by `uses: ./`: a dispatched run should exercise the branch it was
+      # dispatched from, not whatever `@develop` happened to point at.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
       - name: Delete Milestone
         id: delete
-        uses: hustcer/milestone-action@develop
+        uses: ./
         with:
           action: delete
           milestone: ${{ github.event.inputs.milestone }}
