@@ -48,7 +48,7 @@ inputs:
   milestone:
     required: false
     default: ''
-    description: 'The milestone to set, close or delete.'
+    description: 'The milestone to set, close or delete. `close`/`delete` take a title or a number, and an all-digit value is read as a number. `bind-pr`/`bind-issue` match by title only.'
   inherit-from-issue:
     required: false
     default: true
@@ -92,6 +92,7 @@ runs:
         EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         use ${{ github.action_path }}/nu/milestone.nu *
+        use ${{ github.action_path }}/nu/common.nu [parse-bool]
         let action = $env.INPUT_ACTION
         let repo = $env.GITHUB_REPOSITORY
         let title = $env.INPUT_TITLE
@@ -101,8 +102,8 @@ runs:
         let milestone = $env.INPUT_MILESTONE
         let issue = $env.EVENT_ISSUE_NUMBER
         let pr = $env.EVENT_PR_NUMBER
-        let force = if ($env.INPUT_FORCE | is-empty) { false } else { $env.INPUT_FORCE | into bool }
-        let inheritFromIssue = if ($env.INPUT_INHERIT_FROM_ISSUE | is-empty) { true } else { $env.INPUT_INHERIT_FROM_ISSUE | into bool }
+        let force = $env.INPUT_FORCE | parse-bool false
+        let inheritFromIssue = $env.INPUT_INHERIT_FROM_ISSUE | parse-bool true
         (milestone-action $action $repo
           --pr=$pr
           --issue=$issue

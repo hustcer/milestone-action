@@ -1,7 +1,7 @@
 # Description:
 #   - Create a milestone by title, description and due date.
 
-name: Milestone Create@develop
+name: Milestone Create@local
 on:
   workflow_dispatch:
     inputs:
@@ -17,6 +17,7 @@ on:
 
 # Fix GraphQL: Resource not accessible by integration (updatePullRequest)
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
@@ -24,9 +25,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Create Milestone
     steps:
+      # Required by `uses: ./`: a dispatched run should exercise the branch it was
+      # dispatched from, not whatever `@develop` happened to point at.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
       - name: Create Milestone
         id: create
-        uses: hustcer/milestone-action@develop
+        uses: ./
         with:
           action: create
           title: ${{ github.event.inputs.title }}

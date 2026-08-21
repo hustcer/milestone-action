@@ -27,7 +27,7 @@ export def 'milestone-bind-for-pr' [
   --milestone(-m): string,      # Milestone name
   --pr: string,                 # The PR number/url/branch of the PR that we want to add milestone.
   --force(-f),                  # Force update milestone even if the milestone is already set.
-  --dry-run(-d),                # Dry run, only print the milestone that would be set.
+  --dry-run,                    # Dry run, only print the milestone that would be set.
   --inherit-from-issue = true,  # Try to inherit milestone from closing issues. Defaults to true.
 ] {
   check-gh
@@ -39,7 +39,7 @@ export def 'milestone-bind-for-pr' [
     print $'PR (ansi p)($pr)(ansi reset) is in state (ansi p)($prState)(ansi reset), will be ignored.'
     return
   }
-  let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
+  let token = resolve-gh-token
   let selected = if ($milestone | is-empty) { guess-milestone-for-pr $repo $pr $token $inherit_from_issue } else { $milestone }
   let prevMilestone = gh pr view $pr --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
   # No explicit removal is needed on the force path: the REST PATCH below overwrites
@@ -67,7 +67,7 @@ export def 'milestone-bind-for-issue' [
   --milestone(-m): string,  # Milestone name
   --issue: int,             # The Issue number that we want to add milestone.
   --force(-f),              # Force update milestone even if the milestone is already set.
-  --dry-run(-d),            # Dry run, only print the milestone that would be set.
+  --dry-run,                # Dry run, only print the milestone that would be set.
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
@@ -80,15 +80,20 @@ export def 'milestone-bind-for-issue' [
     print $'Issue (ansi p)($issue)(ansi reset) is Not (ansi p)COMPLETED(ansi reset), will be ignored.'
     return
   }
-  let token = $env.GH_TOKEN? | default $env.GITHUB_TOKEN?
+  let token = resolve-gh-token
   let selected = if ($milestone | is-empty) { query-issue-closer-by-graphql $repo $issue $token | get closedBy?.milestone? | default '-' } else { $milestone }
   let prevMilestone = gh issue view $issue --repo $repo --json 'milestone' | from json | get milestone?.title? | default '-'
-  # No explicit removal is needed on the force path: the REST PATCH below overwrites
-  # whatever milestone is currently set.
   if $selected == '-' {
+    # Nothing to bind. `--force` deliberately does NOT strip the existing milestone here:
+    # failing to infer a replacement is no reason to throw away one somebody set by hand.
     print $'No milestone found for issue (ansi p)($issue)(ansi reset) in repository (ansi p)($repo)(ansi reset).'
+    if $force and $prevMilestone != '-' {
+      print $'Keeping the existing milestone (ansi p)($prevMilestone)(ansi reset): (ansi p)--force(ansi reset) has no replacement to apply.'
+    }
     return
   }
+  # No explicit removal is needed on the force path: the REST PATCH below overwrites
+  # whatever milestone is currently set.
   let ignoreSet = not $force and $prevMilestone != '-'
   if $prevMilestone == $selected or $ignoreSet {
     print $'(char nl)Milestone for Issue (ansi p)($issue)(ansi reset) in repo (ansi p)($repo)(ansi reset) was already set to (ansi p)($prevMilestone)(ansi reset), will be ignored.'
@@ -220,9 +225,12 @@ export def create-milestone [
     exit $ECODE.INVALID_PARAMETER
   }
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let dueOnArg = if ($due_on | is-empty) { [] } else { [-F $'due_on=($due_on | into datetime | format date $STD_TIME)'] }
-  let descArg = if ($description | is-empty) { [] } else { [-F $'description=($description)'] }
-  let result = gh api -X POST $'/repos/($repo)/milestones' -F $'title=($title)' ...$dueOnArg ...$descArg
+  # Always `-f` (raw-field), never `-F`: `-F` applies "magic type conversion", so a purely
+  # numeric title such as `2026` would be sent as a JSON number and rejected by the API with
+  # `422 Invalid request. For 'properties/title', 2026 is not a string.`
+  let dueOnArg = if ($due_on | is-empty) { [] } else { [-f $'due_on=($due_on | into datetime | format date $STD_TIME)'] }
+  let descArg = if ($description | is-empty) { [] } else { [-f $'description=($description)'] }
+  let result = gh api -X POST $'/repos/($repo)/milestones' -f $'title=($title)' ...$dueOnArg ...$descArg
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was created successfully.'
   set-action-output 'milestone-number' $milestone.number
@@ -236,14 +244,8 @@ export def close-milestone [
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let found = list-milestones $repo | where title == $milestone
-    if ($found | is-empty) {
-      print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
-    }
-    $found.0.number
-  }
-  let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -F $'state=closed'
+  let milestoneId = resolve-milestone-id $repo $milestone
+  let result = gh api -X PATCH $'/repos/($repo)/milestones/($milestoneId)' -f $'state=closed'
   let milestone = $result | from json
   print $'Milestone (ansi p)($milestone.title)(ansi reset) with NO. (ansi p)($milestone.number)(ansi reset) was closed successfully.'
   set-action-output 'milestone-number' $milestone.number
@@ -257,13 +259,7 @@ export def delete-milestone [
 ] {
   check-gh
   if ($gh_token | is-not-empty) { $env.GH_TOKEN = $gh_token }
-  let milestoneId = if ($milestone | is-int) { $milestone } else {
-    let found = list-milestones $repo | where title == $milestone
-    if ($found | is-empty) {
-      print 'Milestone not found.'; exit $ECODE.INVALID_PARAMETER
-    }
-    $found.0.number
-  }
+  let milestoneId = resolve-milestone-id $repo $milestone
   let result = gh api -X DELETE $'/repos/($repo)/milestones/($milestoneId)'
   let response = $result | from json
   print $'Milestone with NO. (ansi p)($milestoneId)(ansi reset) was deleted successfully.'
@@ -286,6 +282,16 @@ def is-int [] {
   $value =~ '^[0-9]+$'
 }
 
+# Resolve the token used for the direct GraphQL calls. On a runner GH_TOKEN/GITHUB_TOKEN is
+# always set, but locally (`just dr` / `just di`) neither is, and forwarding the resulting null
+# into a `string` positional aborts the run with a type error. Fall back to the gh CLI's own
+# credential so the documented local dry-run workflow keeps working.
+def resolve-gh-token []: nothing -> string {
+  let fromEnv = $env.GH_TOKEN? | default $env.GITHUB_TOKEN? | default ''
+  if ($fromEnv | is-not-empty) { return $fromEnv }
+  do -i { gh auth token | complete } | default {} | get -o stdout | default '' | str trim
+}
+
 def check-gh [] {
   if not (is-installed 'gh') {
     print 'gh command not found, please install it first, see: https://cli.github.com/.'
@@ -298,6 +304,25 @@ def check-gh [] {
 # `--paginate` because a single page only holds 30 milestones.
 def list-milestones [repo: string] {
   gh api -X GET $'/repos/($repo)/milestones' -f state=all --paginate | from json
+}
+
+# Resolve a milestone reference - a number or a title - to its milestone number.
+# Exits with INVALID_PARAMETER when the reference is empty or matches no milestone,
+# so `close` and `delete` report the same diagnostics for the same input.
+def resolve-milestone-id [repo: string, milestone: string]: nothing -> int {
+  if ($milestone | str trim | is-empty) {
+    print $'(ansi r)Error:(ansi reset) A non-empty `milestone` title or number is required.'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  # An all-digit value always wins as a number, so a milestone whose *title* is all digits
+  # can only be addressed by its number. Documented in the README input tables.
+  if ($milestone | is-int) { return ($milestone | into int) }
+  let found = list-milestones $repo | where title == $milestone
+  if ($found | is-empty) {
+    print $'(ansi r)Error:(ansi reset) Milestone (ansi p)($milestone)(ansi reset) not found in repository (ansi p)($repo)(ansi reset).'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  $found.0.number
 }
 
 # Get milestone number by title using REST API
@@ -342,7 +367,7 @@ export def milestone-action [
   action: string,               # Action to perform, could be create, close, or bind-pr.
   repo: string,                 # Github repository name
   --gh-token(-t): string,       # Github access token
-  --milestone(-m): string,      # Milestone name
+  --milestone(-m): string = '', # Milestone title or number
   --title: string = '',         # Milestone title to create
   --due-on(-d): string,         # Milestone due date, format: yyyy-mm-dd
   --description(-D): string,    # Milestone description
@@ -358,7 +383,10 @@ export def milestone-action [
     create => { create-milestone $repo $title --due-on $due_on -D $description -t $gh_token },
     bind-pr => { milestone-bind-for-pr $repo -t $gh_token -m $milestone --pr $pr --force=$force --dry-run=$dry_run --inherit-from-issue=$inherit_from_issue },
     bind-issue => { milestone-bind-for-issue $repo -t $gh_token -m $milestone --issue ($issue | into int) --force=$force --dry-run=$dry_run },
-    _ => { error make { msg: $'Invalid action: ($action)' } },
+    _ => {
+      print $'(ansi r)Error:(ansi reset) Invalid action (ansi p)($action)(ansi reset), should be one of bind-pr, bind-issue, create, close or delete.'
+      exit $ECODE.INVALID_PARAMETER
+    },
   }
 }
 
