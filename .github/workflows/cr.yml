@@ -26,7 +26,7 @@ jobs:
         with:
           max-length: 50000
           # model: 'deepseek-v4'                          # Infinigence's DeepSeek V4 model
-          model: 'deepseek-flash'                         # Infinigence's DeepSeek flash model
+          model: 'deepseek-v4-flash'                      # Infinigence's DeepSeek flash model
           base-url: 'https://cloud.infini-ai.com/maas/v1' # Infinigence's API base URL
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
