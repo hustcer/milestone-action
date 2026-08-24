@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.2] - 2026-08-25
+
+### Bug Fixes
+
+- Harden action inputs and make GraphQL file lookup path-independent (#168)
+- Look up milestones by title across all states with pagination (#170)
+- Guard GITHUB_OUTPUT, surface GraphQL errors and tighten is-int (#172)
+- Require title for create action and sync stale docs (#174)
+- Send milestone fields as raw strings and harden action inputs (#176)
+
+### Deps
+
+- Upgrade hustcer/setup-nu to v3.25 & Nu to 0.113.1
+- Upgrade hustcer/setup-nu to v3.27 and Nu to 0.115
+- Upgrade Nu to 0.115.1
+
 ## [3.1] - 2026-01-23
 
 ### Documentation
