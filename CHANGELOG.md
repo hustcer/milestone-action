@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [3.3] - 2026-11-15
+
+### Deps
+
+- Upgrade nushell from 0.115.1 to 0.117.0
+- Upgrade hustcer/setup-nu from v3.27 to v3.30
+
 ## [3.2] - 2026-08-25
 
 ### Bug Fixes
